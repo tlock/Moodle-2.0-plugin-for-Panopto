@@ -1,3 +1,5 @@
+** Note: This Moodle block targets Panopto version 4.7 and earlier. If you are running Panopto version 4.8 or later, please use the main branch instead. **
+
 # Panopto plugin for Moodle 2
 
 ## What is it?
