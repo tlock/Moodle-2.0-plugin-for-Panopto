@@ -66,5 +66,12 @@ $string['role_map_header'] = 'Change Panopto Role Mappings';
 $string['role_map_info_text'] = "Choose which Panopto roles a user's Moodle role will map to. <br> Unmapped roles will be given the 'Viewer' role in Panopto.
  <br><br> ";
 $string['block_panopto_async_tasks'] = 'Asynchronous enrolment sync';
-
+$string['block_panopto_global_creator_role_title'] = "Creator role mappings";
+$string['block_panopto_global_creator_role_description'] = "Select the default Moodle roles that will map to the 'Creator' role in Panopto";
+$string['block_panopto_global_publisher_role_title'] = "Publisher role mappings";
+$string['block_panopto_global_publisher_role_description'] = "nr:Select the default Moodle roles that will map to the 'Publisher' role in Panopto";
+$string['block_panopto_allow_per_course_role_mappings'] = "nr:Allow per-course role mappings.";
+$string['block_panopto_allow_per_course_role_mappings_description'] = "nr:Allow changing the Moodle roles that map to the 'Creator' and 'Publisher' Panopto roles per-course from the courses Panopto block configuration. Disabling this option will cause all course's to provision users based on the global role mappings set here.";
+$string['block_panopto_per_course_role__mapping_disabled'] = "nr:<b><font color='red'>Per-course role mappings have been disabled by the administrator. 
+<br/>All roles will be mapped according to the Panopto block's sitewide, global settings.<br/></font></b>"; 
 /* End of file block_panopto.php */

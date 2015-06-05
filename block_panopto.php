@@ -75,12 +75,12 @@ class block_panopto extends block_base {
      * Save per-instance config in custom table instead of mdl_block_instance configdata column.
      */
     public function instance_config_save($data, $nolongerused = false) {
-        global $COURSE;
+        global $COURSE, $CFG;
         if (!empty($data->course)) {
             panopto_data::set_panopto_course_id($COURSE->id, $data->course);
 
-            // If role mapping info is given, map roles.
-            if (!empty($data->creator) || !empty($data->publisher)) {
+            // If role mapping info is given, and setting per-course role mappings is enabled, map roles.
+            if ($CFG->block_panopto_enable_per_course_role_mappings && (!empty($data->creator) || !empty($data->publisher))) {
                 self::set_course_role_permissions($COURSE->id, $data->publisher, $data->creator);
 
                 // Get course context.
@@ -136,9 +136,18 @@ class block_panopto extends block_base {
 
         // Sync role mapping. In case this is the first time block is running we need to load old settings from db.
         // They will be the default values if this is the first time running.
-        $mapping = panopto_data::get_course_role_mappings($COURSE->id);
-        self::set_course_role_permissions($COURSE->id, $mapping['publisher'], $mapping['creator']);
-
+        
+        //If per-role mappings are enabled, get coure's role mappings from database and set role permissions based on those.
+        if($CFG->block_panopto_enable_per_course_role_mappings) {
+            $mapping = panopto_data::get_course_role_mappings($COURSE->id);
+            self::set_course_role_permissions($COURSE->id, $mapping['publisher'], $mapping['creator']);
+        }
+        else {
+            //If per-course role mappings are not enabled, set permissions according to role mappings from global settings.
+            $globalcreatormapping = $CFG->block_panopto_global_creator_role_mapping;
+            $globalpublishermapping = $CFG->block_panopto_global_publisher_role_mapping;
+            self::set_course_role_permissions($COURSE->id, explode(',', $globalpublishermapping), explode(',', $globalcreatormapping));
+        }
         if ($this->content !== null) {
             return $this->content;
         }
