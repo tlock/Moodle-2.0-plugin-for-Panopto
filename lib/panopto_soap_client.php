@@ -37,12 +37,6 @@ class panopto_soap_client extends SoapClient {
     // Store the current action so we can insert it in __doRequest.
     public $currentaction;
 
-    public $old;
-       
-        
-        
-
-    
     public function panopto_soap_client($servername, $apiuseruserkey, $apiuserauthcode) {
         // Instantiate SoapClient in non-WSDL mode.
         parent::__construct(null, array('location' => "http://$servername/Panopto/Services/ClientData.svc",
@@ -51,10 +45,6 @@ class panopto_soap_client extends SoapClient {
         // Cache web service credentials for all calls requiring authentication.
         $this->authparams = array("ApiUserKey" => $apiuseruserkey,
             "AuthCode" => $apiuserauthcode);
-        
-
-        //Set request timeout to 5 minutes.
-        ini_set("default_socket_timeout", 300);
     }
 
     /**
