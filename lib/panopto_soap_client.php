@@ -22,14 +22,16 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+include dirname(__FILE__) . "/SoapClientTimeout.php";
+
 /**
- * Subclasses SoapClient and hand-crafts SOAP parameters to be compatible with ASP.NET web service in non-WSDL mode.
+ * Subclasses SoapClientTimeout and hand-crafts SOAP parameters to be compatible with ASP.NET web service in non-WSDL mode.
  *
  * @package block_panopto
  * @copyright  Panopto 2009 - 2015
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class panopto_soap_client extends SoapClient {
+class panopto_soap_client extends SoapClientTimeout {
 
     public $authparams;
 
@@ -39,15 +41,20 @@ class panopto_soap_client extends SoapClient {
 
     public function panopto_soap_client($servername, $apiuseruserkey, $apiuserauthcode) {
         // Instantiate SoapClient in non-WSDL mode.
-        parent::__construct(null, array('location' => "http://$servername/Panopto/Services/ClientData.svc",
-            'uri' => "http://services.panopto.com"));
+        //Set call timeout to 5 minutes.
+        parent::__construct
+        (
+            null,
+            array(
+                    'location' => "http://$servername/Panopto/Services/ClientData.svc",
+                    'uri' => "http://services.panopto.com",
+                    'timeout' => 300000
+                )
+        );
 
         // Cache web service credentials for all calls requiring authentication.
         $this->authparams = array("ApiUserKey" => $apiuseruserkey,
             "AuthCode" => $apiuserauthcode);
-            
-        //Set request timeout to 5 minutes.
-        ini_set("default_socket_timeout", 300);
     }
 
     /**
