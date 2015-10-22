@@ -31,4 +31,11 @@ $plugin->maturity = MATURITY_STABLE;
 $plugin->dependencies = array(
     'mod_forum' => ANY_VERSION
 );
+
+//Used to keep track of actual tracked version of the block this one corresponds to,
+
+// in case this is a hotfix and the version number shouldn't be updated.
+
+$realversion = 2015100805;
+
 /* End of file version.php */

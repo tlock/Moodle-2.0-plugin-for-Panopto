@@ -21,21 +21,12 @@
  */
 
 defined('MOODLE_INTERNAL') || die;
-
-require_once(dirname(__FILE__) . '/../../lib/accesslib.php');
-
+include 'version.php';
 global $CFG;
 global $numservers;
 $numservers = $CFG->block_panopto_server_number;
 
-// Get context for front page course. The role mappings here should always have the default names,
-//and mappings should exist for any roles assignable in courses on the site.
-$coursecontext = context_course::instance(1);
-
 $default = 0;
-
-$rolearray = array();
-
 if ($ADMIN->fulltree) {
     $_SESSION['numservers'] = $numservers + 1;
 
@@ -68,40 +59,6 @@ if ($ADMIN->fulltree) {
                         get_string('block_global_application_key', 'block_panopto') . " " . ($x + 1), '', '', PARAM_TEXT));
     }
 
-    // Get roles that current user may assign on the system.
-    $currentsystemroles = get_assignable_roles($coursecontext, $rolenamedisplay = ROLENAME_ALIAS, $withusercounts = false, $user = null);
-    while ($role = current($currentsystemroles)) {
-                $rolearray[key($currentsystemroles)] = $currentsystemroles[key($currentsystemroles)];
-                next($currentsystemroles);
-            }
-
-    $settings->add(
-            new admin_setting_configmultiselect(
-                'block_panopto_global_creator_role_mapping',
-                get_string('block_panopto_global_creator_role_title', 'block_panopto'),
-                get_string('block_panopto_global_creator_role_description', 'block_panopto'),
-                array(3,4),
-                $rolearray
-                )
-        );
-
-    $settings->add(
-            new admin_setting_configmultiselect(
-                'block_panopto_global_publisher_role_mapping',
-                get_string('block_panopto_global_publisher_role_title', 'block_panopto'),
-                get_string('block_panopto_global_publisher_role_description', 'block_panopto'),
-                array(1),
-                $rolearray
-                )
-        );
-
-    $settings->add(
-            new admin_setting_configcheckbox(
-                    'block_panopto_enable_per_course_role_mappings',
-                    get_string('block_panopto_allow_per_course_role_mappings', 'block_panopto'), get_string('block_panopto_allow_per_course_role_mappings_description', 'block_panopto'), 0
-            )
-    );
-
     $settings->add(
             new admin_setting_configcheckbox(
                     'block_panopto_async_tasks',
@@ -109,7 +66,8 @@ if ($ADMIN->fulltree) {
             )
     );
 
-
+    $version_number = '<b>' . $realversion . '</b><br/>';
+    $settings->add(new admin_setting_heading('block_panopto_display_version', '', 'Current version of the panopto block: ' . $version_number));
 
     $link = '<a href="' . $CFG->wwwroot . '/blocks/panopto/provision_course.php">' . get_string('block_global_add_courses', 'block_panopto') . '</a>';
     $settings->add(new admin_setting_heading('block_panopto_add_courses', '', $link));
