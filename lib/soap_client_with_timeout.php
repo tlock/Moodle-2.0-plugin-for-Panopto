@@ -44,7 +44,7 @@ class soap_client_with_timeout extends SoapClient
             else
             {
                 //Otherwise, keep default and log that timeout was not set.
-                error_log("Soap Client timeout must be greater than zero. Reverting to default timeout of 60 seconds.")
+                error_log("Soap Client timeout must be greater than zero. Reverting to default timeout of 60 seconds.");
             }
         }
         //After setting timeout, call the parent constructor
@@ -99,10 +99,12 @@ class soap_client_with_timeout extends SoapClient
         
         //Close cURL session.
         curl_close($curl);
+        
+        //Return the SOAP response
+        return $response;
     }
 
-    //Return the SOAP response
-    return $response;
+
 }
 
 
