@@ -68,10 +68,9 @@ class soap_client_with_timeout extends SoapClient
                 CURLOPT_POSTFIELDS => $request,
                 CURLOPT_NOSIGNAL => true,
                 CURLOPT_HTTPHEADER => array(sprintf('Content-Type: %s', $version == 2 ? 'application/soap+xml' : 'text/xml'), sprintf('SOAPAction: %s', $action)),
-                CURLOPT_SSL_VERIFYPEER => true //All of our SOAP calls must be made via ssl
+                CURLOPT_SSL_VERIFYPEER => true, //All of our SOAP calls must be made via ssl
+                CURLOPT_TIMEOUT => $this->timeout //Set call timeout in seconds   
                 );
-            //Set call timeout in seconds   
-            $options[CURLOPT_TIMEOUT] = $this->timeout;
 
             //Attempt to set the options for the cURL call
             if (curl_setopt_array($curl, $options) !== false)
