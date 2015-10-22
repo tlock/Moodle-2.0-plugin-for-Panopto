@@ -22,16 +22,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-include dirname(__FILE__) . "/SoapClientTimeout.php";
-
 /**
- * Subclasses SoapClientTimeout and hand-crafts SOAP parameters to be compatible with ASP.NET web service in non-WSDL mode.
+ * Subclasses SoapClient and hand-crafts SOAP parameters to be compatible with ASP.NET web service in non-WSDL mode.
  *
  * @package block_panopto
  * @copyright  Panopto 2009 - 2015
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class panopto_soap_client extends SoapClientTimeout {
+class panopto_soap_client extends soap_client_with_timeout {
 
     public $authparams;
 
