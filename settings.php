@@ -66,7 +66,7 @@ if ($ADMIN->fulltree) {
             )
     );
 
-    $version_number = '<b>' . $realversion . '</b><br/>';
+    $version_number = '<b>' . $internalversion . '</b><br/>';
     $settings->add(new admin_setting_heading('block_panopto_display_version', '', 'Current version of the panopto block: ' . $version_number));
 
     $link = '<a href="' . $CFG->wwwroot . '/blocks/panopto/provision_course.php">' . get_string('block_global_add_courses', 'block_panopto') . '</a>';
