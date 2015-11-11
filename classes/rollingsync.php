@@ -35,17 +35,13 @@ require_once(dirname(__FILE__) . '/../lib/panopto_data.php');
  */
 class block_panopto_rollingsync {
 
-    public $requiredVersion = 2014051200; //Moodle version 2.7 or higher required for rolling sync tasks.
-
     /**
      * Called when an enrolment has been created.
      */
     public static function enrolmentcreated(\core\event\user_enrolment_created $event) {
         global $CFG;
 
-        if (    \panopto_data::get_panopto_course_id($event->courseid) === false
-            ||   $CFG->version < $requiredVersion) 
-        {
+        if (\panopto_data::get_panopto_course_id($event->courseid) === false) {
             return;
         }
 
@@ -70,8 +66,7 @@ class block_panopto_rollingsync {
     public static function enrolmentdeleted(\core\event\user_enrolment_deleted $event) {
         global $CFG;
 
-        if (\panopto_data::get_panopto_course_id($event->courseid) === false
-            || $CFG->version < $requiredVersion) {
+        if (\panopto_data::get_panopto_course_id($event->courseid) === false) {
             return;
         }
 
@@ -96,8 +91,7 @@ class block_panopto_rollingsync {
     public static function roleadded(\core\event\role_assigned $event) {
         global $CFG;
 
-        if (\panopto_data::get_panopto_course_id($event->courseid) === false
-            || $CFG->version < $requiredVersion) {
+        if (\panopto_data::get_panopto_course_id($event->courseid) === false) {
             return;
         }
 
@@ -122,8 +116,7 @@ class block_panopto_rollingsync {
     public static function roledeleted(\core\event\role_unassigned $event) {
         global $CFG;
 
-        if (\panopto_data::get_panopto_course_id($event->courseid) === false
-            || $CFG->version < $requiredVersion) {
+        if (\panopto_data::get_panopto_course_id($event->courseid) === false) {
             return;
         }
 
