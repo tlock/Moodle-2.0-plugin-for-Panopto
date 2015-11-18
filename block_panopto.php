@@ -81,7 +81,7 @@ class block_panopto extends block_base {
 
             // If role mapping info is given, map roles.
             if (!empty($data->creator) || !empty($data->publisher)) {
-                self::set_course_role_permissions($COURSE->id, $data->publisher, $data->creator);
+                panopto_data::set_course_role_permissions($COURSE->id, $data->publisher, $data->creator);
 
                 // Get course context.
                 $context = context_course::instance($COURSE->id);
@@ -137,7 +137,7 @@ class block_panopto extends block_base {
         // Sync role mapping. In case this is the first time block is running we need to load old settings from db.
         // They will be the default values if this is the first time running.
         $mapping = panopto_data::get_course_role_mappings($COURSE->id);
-        self::set_course_role_permissions($COURSE->id, $mapping['publisher'], $mapping['creator']);
+        panopto_data::set_course_role_permissions($COURSE->id, $mapping['publisher'], $mapping['creator']);
 
         if ($this->content !== null) {
             return $this->content;
@@ -331,50 +331,6 @@ class block_panopto extends block_base {
             'my' => false,
             'all' => true
         );
-    }
-
-    /**
-     * Gives selected capabilities to specified roles.
-     */
-    public function set_course_role_permissions($courseid, $publisherroles, $creatorroles) {
-        $coursecontext = context_course::instance($courseid);
-
-        // Clear capabilities from all of course's roles to be reassigned.
-        self::clear_capabilities_for_course($courseid);
-
-        foreach ($publisherroles as $role) {
-            if (isset($role) && trim($role)!=='' ){
-                assign_capability('block/panopto:provision_aspublisher', CAP_ALLOW, $role, $coursecontext, $overwrite = false);
-            }
-
-        }
-        foreach ($creatorroles as $role) {
-            if (isset($role) && trim($role)!=='' ){
-                assign_capability('block/panopto:provision_asteacher', CAP_ALLOW, $role, $coursecontext, $overwrite = false);
-                }
-        }
-        // Mark dirty (moodle standard for capability changes at context level).
-        $coursecontext->mark_dirty();
-
-        panopto_data::set_course_role_mappings($courseid, $publisherroles, $creatorroles);
-    }
-
-    /**
-     * Clears capabilities from all roles so that they may be reassigned as specified.
-     */
-    public function clear_capabilities_for_course($courseid) {
-        $coursecontext = context_course::instance($courseid);
-
-        // Get all roles for current course.
-        $currentcourseroles = get_all_roles($coursecontext);
-
-        // Remove publisher and creator capabilities from all roles.
-        foreach ($currentcourseroles as $role) {
-            unassign_capability('block/panopto:provision_aspublisher', $role->id, $coursecontext);
-            unassign_capability('block/panopto:provision_asteacher', $role->id, $coursecontext);
-            // Mark dirty (moodle standard for capability changes at context level).
-            $coursecontext->mark_dirty();
-        }
     }
 
 }

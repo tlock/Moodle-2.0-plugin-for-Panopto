@@ -29,6 +29,7 @@ if (empty($CFG)) {
 require_once($CFG->libdir . '/dmllib.php');
 require_once("block_panopto_lib.php");
 require_once("panopto_soap_client.php");
+require_once(dirname(__FILE__) . '/../../../lib/accesslib.php');
 
 /**
  * Panopto data object. Contains info required for provisioning a course with Panopto.
@@ -46,6 +47,15 @@ class panopto_data {
     public $soapclient;
     public $sessiongroupid;
     public $uname;
+
+    //By deault, the Moodle role "Manager" will map to publisher in Panopto.
+    // It's Moodle ID is '1'.
+    public static $publisherdefaultrolemapping = array('1');
+
+    //By default, the Moodle roles "Teacher" and "Non-Editing Teacher" will map to creator in Panopto.
+    //Their Moodle IDs are '3' and '4' respectively.
+    public static $creatordefaultrolemapping = array('3', '4');
+
 
     public function __construct($moodlecourseid) {
         global $USER, $CFG;
@@ -96,14 +106,9 @@ class panopto_data {
         if (!empty($courseinfo) && !empty($courseinfo->PublicID)) {
             self::set_panopto_course_id($this->moodlecourseid, $courseinfo->PublicID);
             self::set_panopto_server_name($this->moodlecourseid, $this->servername);
-            self::set_panopto_app_key($this->moodlecourseid, $this->applicationkey);
-            
-            //If old role mappings exists, do not remap. Otherwise, set role mappings to defaults
-            $mappings = self::get_course_role_mappings($this->moodlecourseid);
-            if (empty($mappings['creator']) && empty($mappings['publisher'])) {
-                self::set_course_role_mappings($this->moodlecourseid, array('1'), array('3','4'));
+            self::set_panopto_app_key($this->moodlecourseid, $this->applicationkey);            
             }
-        }
+        
 
         return $courseinfo;
     }
@@ -113,7 +118,29 @@ class panopto_data {
      */
     public function get_provisioning_info() {
 
-        global $DB;
+        global $DB, $COURSE;
+        
+         //If old role mappings exists, do not remap. Otherwise, set role mappings to defaults
+        $mappings = self::get_course_role_mappings($this->moodlecourseid);
+        
+        if (empty($mappings['creator'][0]) && empty($mappings['publisher'][0])) {
+            
+            //Set the role mappings for the course to the defaults.
+            self::set_course_role_mappings(
+                $this->moodlecourseid,
+                self::$publisherdefaultrolemapping,
+                self::$creatordefaultrolemapping
+                );
+
+            //Grant course users the proper panopto permissions based on the default role mappings.
+            //This will make the role mappings be recognized when provisioning.
+            self::set_course_role_permissions(
+                $this->moodlecourseid,
+                self::$publisherdefaultrolemapping,
+                self::$creatordefaultrolemapping
+                );
+        }
+        
         $provisioninginfo->ShortName = $DB->get_field('course', 'shortname', array('id' => $this->moodlecourseid));
         $provisioninginfo->LongName = $DB->get_field('course', 'fullname', array('id' => $this->moodlecourseid));
         $provisioninginfo->ExternalCourseID = $this->instancename . ":" . $this->moodlecourseid;
@@ -524,6 +551,49 @@ class panopto_data {
         return new panopto_soap_client($this->servername, $apiuseruserkey, $apiuserauthcode);
     }
 
+     /**
+     * Gives selected capabilities to specified roles.
+     */
+    public static function set_course_role_permissions($courseid, $publisherroles, $creatorroles) {
+        $coursecontext = context_course::instance($courseid);
+
+        // Clear capabilities from all of course's roles to be reassigned.
+        self::clear_capabilities_for_course($courseid);
+
+        foreach ($publisherroles as $role) {
+            if (isset($role) && trim($role)!=='' ){
+                assign_capability('block/panopto:provision_aspublisher', CAP_ALLOW, $role, $coursecontext, $overwrite = false);
+            }
+
+        }
+        foreach ($creatorroles as $role) {
+            if (isset($role) && trim($role)!=='' ){
+                assign_capability('block/panopto:provision_asteacher', CAP_ALLOW, $role, $coursecontext, $overwrite = false);
+                }
+        }
+        // Mark dirty (moodle standard for capability changes at context level).
+        $coursecontext->mark_dirty();
+
+        panopto_data::set_course_role_mappings($courseid, $publisherroles, $creatorroles);
+    }
+
+    /**
+     * Clears capabilities from all roles so that they may be reassigned as specified.
+     */
+    public static function clear_capabilities_for_course($courseid) {
+        $coursecontext = context_course::instance($courseid);
+
+        // Get all roles for current course.
+        $currentcourseroles = get_all_roles($coursecontext);
+
+        // Remove publisher and creator capabilities from all roles.
+        foreach ($currentcourseroles as $role) {
+            unassign_capability('block/panopto:provision_aspublisher', $role->id, $coursecontext);
+            unassign_capability('block/panopto:provision_asteacher', $role->id, $coursecontext);
+            // Mark dirty (moodle standard for capability changes at context level).
+            $coursecontext->mark_dirty();
+        }
+    }
 }
 
 /* End of file panopto_data.php */
