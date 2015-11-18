@@ -13,15 +13,12 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
  * @package block_panopto
  * @copyright  Panopto 2009 - 2015 /With contributions from Spenser Jones (sjones@ambrose.edu)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
-
 //This class extends php's built in SoapClient class with logic for handling different timeout durations
 //for making calls. The default timeout is 60 seconds, but can be changed by including a 'timeout' value
 //in the options array passed in as an argument.
@@ -30,7 +27,6 @@ class soap_client_with_timeout extends SoapClient
 {
     //Timeout value in seconds. Default is 60 seconds.
     public $timeout = 60;
-
     //Overrides parent constructor to set timeout if included in options
     public function _construct($wsdl, $options)    
     {
@@ -50,8 +46,6 @@ class soap_client_with_timeout extends SoapClient
         //After setting timeout, call the parent constructor
         parent::__construct($wsdl, $options);
     }
-
-
     //Overrides parent __doRequest function to make SOAP calls with custom timeout
     public function __doRequest($request, $location, $action, $version, $one_way = FALSE)
     {
@@ -71,13 +65,11 @@ class soap_client_with_timeout extends SoapClient
                 CURLOPT_SSL_VERIFYPEER => true, //All of our SOAP calls must be made via ssl
                 CURLOPT_TIMEOUT => $this->timeout //Set call timeout in seconds   
                 );
-
             //Attempt to set the options for the cURL call
             if (curl_setopt_array($curl, $options) !== false)
             {
                 //Make call using cURL (including timeout settings)
                 $response = curl_exec($curl);
-
                 //If cURL throws an error, log it
                 if (curl_errno($curl) !== 0)
                 {
@@ -102,9 +94,5 @@ class soap_client_with_timeout extends SoapClient
         //Return the SOAP response
         return $response;
     }
-
-
 }
-
-
 ?>
