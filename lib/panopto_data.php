@@ -29,7 +29,6 @@ if (empty($CFG)) {
 require_once($CFG->libdir . '/dmllib.php');
 require_once("block_panopto_lib.php");
 require_once("panopto_soap_client.php");
-require_once(dirname(__FILE__) . '/../../../lib/accesslib.php');
 
 /**
  * Panopto data object. Contains info required for provisioning a course with Panopto.
@@ -48,7 +47,7 @@ class panopto_data {
     public $sessiongroupid;
     public $uname;
 
-    //By deault, the Moodle role "Manager" will map to publisher in Panopto.
+    //By default, the Moodle role "Manager" will map to publisher in Panopto.
     // It's Moodle ID is '1'.
     public static $publisherdefaultrolemapping = array('1');
 
