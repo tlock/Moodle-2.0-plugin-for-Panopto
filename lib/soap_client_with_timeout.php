@@ -19,6 +19,10 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
+
+//Disable maximum execution time for running this script.
+set_time_limit(0);
+
 //This class extends php's built in SoapClient class with logic for handling different timeout durations
 //for making calls. The default timeout is 60 seconds, but can be changed by including a 'timeout' value
 //in the options array passed in as an argument.
