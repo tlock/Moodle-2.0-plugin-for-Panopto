@@ -20,7 +20,9 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-//Disable maximum execution time for running this script.
+//Provisioning operations with many users can take longer than the default 30 seconds to finish executing.
+//We disable maximum execution time for running this script so that it will continue to execute for as long as the
+//timeout duration specified.
 set_time_limit(0);
 
 //This class extends php's built in SoapClient class with logic for handling different timeout durations
