@@ -29,6 +29,7 @@ if (empty($CFG)) {
 require_once($CFG->libdir . '/dmllib.php');
 require_once("block_panopto_lib.php");
 require_once("panopto_soap_client.php");
+require_once("panopto_version_soap_client.php");
 
 /**
  * Panopto data object. Contains info required for provisioning a course with Panopto.
@@ -46,6 +47,7 @@ class panopto_data {
     public $soapclient;
     public $sessiongroupid;
     public $uname;
+    public $panoptoversion;
 
     //By default, the Moodle role "Manager" will map to publisher in Panopto.
     // It's Moodle ID is '1'.
@@ -66,6 +68,7 @@ class panopto_data {
         if (isset($moodlecourseid)) {
             $this->servername = self::get_panopto_servername($moodlecourseid);
             $this->applicationkey = self::get_panopto_app_key($moodlecourseid);
+            $this->panoptoversion = self::getserverversion($this->servername);
         }
 
         // Fetch current Panopto course mapping if we have a Moodle course ID.
@@ -74,6 +77,9 @@ class panopto_data {
             $this->moodlecourseid = $moodlecourseid;
             $this->sessiongroupid = self::get_panopto_course_id($moodlecourseid);
         }
+
+        
+
     }
 
     /**
@@ -94,14 +100,23 @@ class panopto_data {
      */
     public function provision_course($provisioninginfo) {
         global $DB;
+        
+        $courseinfo;
 
         // If no soap client for this instance, instantiate one.
         if (!isset($this->soapclient)) {
             $this->soapclient = self::instantiate_soap_client($this->uname, $this->servername, $this->applicationkey);
         }
 
-        $courseinfo = $this->soapclient->provision_course($provisioninginfo);
-
+        if(    !empty($this->panoptoversion) 
+            && version_compare($this->panoptoversion, 5) >= 0)
+        {
+            $courseinfo = $this->soapclient->provision_course_with_options($provisioninginfo);
+        }
+        else
+        {
+            $courseinfo = $this->soapclient->provision_course($provisioninginfo);
+        }
         if (!empty($courseinfo) && !empty($courseinfo->PublicID)) {
             self::set_panopto_course_id($this->moodlecourseid, $courseinfo->PublicID);
             self::set_panopto_server_name($this->moodlecourseid, $this->servername);
@@ -592,6 +607,31 @@ class panopto_data {
             // Mark dirty (moodle standard for capability changes at context level).
             $coursecontext->mark_dirty();
         }
+    }
+
+
+    public static function getIAuthSoapClient()
+    {
+        $authSoapClient = new SoapClient("https://". $this->servername . "/Panopto/PublicAPI/4.6/Auth.svc?wsdl");
+
+    }
+
+    public function getserverversion($servername)
+    {
+        $panoptoversion;
+
+        $versionsoapclient = new panopto_version_soap_client($servername);
+
+        $serverversionresult = $versionsoapclient->get_server_version();
+
+  if(!empty($serverversionresult))
+        {
+            if(!empty($serverversionresult->{'GetServerVersionResult'}))
+            {
+                $panoptoversion = $serverversionresult->{'GetServerVersionResult'};
+            }
+        }
+        return $panoptoversion;
     }
 }
 
