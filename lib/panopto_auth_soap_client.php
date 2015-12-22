@@ -1,5 +1,5 @@
 <?php
-class panopto_version_soap_client extends SoapClient{
+class panopto_auth_soap_client extends SoapClient{
     
     private $getVersionAction = "http://tempuri.org/IAuth/GetServerVersion";
     
@@ -26,5 +26,4 @@ class panopto_version_soap_client extends SoapClient{
     }
 }
 
-
-?>
+/* End of file panopto_auth_soap_client.php */

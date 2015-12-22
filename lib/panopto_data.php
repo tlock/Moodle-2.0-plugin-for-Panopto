@@ -29,7 +29,7 @@ if (empty($CFG)) {
 require_once($CFG->libdir . '/dmllib.php');
 require_once("block_panopto_lib.php");
 require_once("panopto_soap_client.php");
-require_once("panopto_version_soap_client.php");
+require_once("panopto_auth_soap_client.php");
 
 /**
  * Panopto data object. Contains info required for provisioning a course with Panopto.
@@ -68,7 +68,6 @@ class panopto_data {
         if (isset($moodlecourseid)) {
             $this->servername = self::get_panopto_servername($moodlecourseid);
             $this->applicationkey = self::get_panopto_app_key($moodlecourseid);
-            $this->panoptoversion = self::getserverversion($this->servername);
         }
 
         // Fetch current Panopto course mapping if we have a Moodle course ID.
@@ -77,9 +76,6 @@ class panopto_data {
             $this->moodlecourseid = $moodlecourseid;
             $this->sessiongroupid = self::get_panopto_course_id($moodlecourseid);
         }
-
-        
-
     }
 
     /**
@@ -108,7 +104,13 @@ class panopto_data {
             $this->soapclient = self::instantiate_soap_client($this->uname, $this->servername, $this->applicationkey);
         }
 
-        if(    !empty($this->panoptoversion) 
+        //Get Panopto version from server if we don't already have it.
+        if (!isset($this->panoptoversion))
+        {
+            $this->panoptoversion = self::get_server_version($this->servername);
+        }
+
+        if(!empty($this->panoptoversion) 
             && version_compare($this->panoptoversion, 5) >= 0)
         {
             $courseinfo = $this->soapclient->provision_course_with_options($provisioninginfo);
@@ -123,7 +125,6 @@ class panopto_data {
             self::set_panopto_app_key($this->moodlecourseid, $this->applicationkey);            
             }
         
-
         return $courseinfo;
     }
 
@@ -609,30 +610,23 @@ class panopto_data {
         }
     }
 
-
-    public static function getIAuthSoapClient()
-    {
-        $authSoapClient = new SoapClient("https://". $this->servername . "/Panopto/PublicAPI/4.6/Auth.svc?wsdl");
-
-    }
-
-    public function getserverversion($servername)
+    public function get_server_version($servername)
     {
         $panoptoversion;
 
-        $versionsoapclient = new panopto_version_soap_client($servername);
+        $versionsoapclient = new panopto_auth_soap_client($servername);
 
         $serverversionresult = $versionsoapclient->get_server_version();
 
-  if(!empty($serverversionresult))
-        {
-            if(!empty($serverversionresult->{'GetServerVersionResult'}))
+        if(!empty($serverversionresult))
             {
-                $panoptoversion = $serverversionresult->{'GetServerVersionResult'};
+                if(!empty($serverversionresult->{'GetServerVersionResult'}))
+                {
+                    $panoptoversion = $serverversionresult->{'GetServerVersionResult'};
+                }
             }
+            return $panoptoversion;
         }
-        return $panoptoversion;
-    }
 }
 
 /* End of file panopto_data.php */
