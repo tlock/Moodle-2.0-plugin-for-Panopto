@@ -20,15 +20,15 @@ class panopto_auth_soap_client extends SoapClient{
         return parent::__doRequest($request, $location, $this->getVersionAction, $version);
     }
 
-    public function get_server_version()
+    private function get_server_version()
     {
         return parent::__soapCall("GetServerVersion", array());
     }
 
     /**
-    * Returns the version number of the specified Panopto server.
+    * Returns the version number of the current Panopto server.
     */
-     public function get_panopto_server_version($servername)
+     public function get_panopto_server_version()
     {
         $panoptoversion;
 

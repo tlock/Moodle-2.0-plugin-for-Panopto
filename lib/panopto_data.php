@@ -114,7 +114,7 @@ class panopto_data {
         //Get Panopto version from server if we don't already have it.
         if (!isset($this->panoptoversion))
         {
-            $this->panoptoversion = $this->authsoapclient->get_panopto_server_version($this->servername);
+            $this->panoptoversion = $this->authsoapclient->get_panopto_server_version();
         }
 
         if(!empty($this->panoptoversion)) {
