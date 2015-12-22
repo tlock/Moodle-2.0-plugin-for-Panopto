@@ -45,6 +45,7 @@ class panopto_data {
     public $servername;
     public $applicationkey;
     public $soapclient;
+    public $authsoapclient;
     public $sessiongroupid;
     public $uname;
     public $panoptoversion;
@@ -85,7 +86,7 @@ class panopto_data {
         
         // If no soap client for this instance, instantiate one.
         if (!isset($this->soapclient)) {
-            $this->soapclient = self::instantiate_soap_client($this->uname, $this->servername, $this->applicationkey);
+            $this->soapclient = $this->instantiate_soap_client($this->uname, $this->servername, $this->applicationkey);
         }
 
         return $this->soapclient->get_system_info();
@@ -97,34 +98,42 @@ class panopto_data {
     public function provision_course($provisioninginfo) {
         global $DB;
         
-        $courseinfo;
+        $courseinfo = new stdClass();
 
         // If no soap client for this instance, instantiate one.
         if (!isset($this->soapclient)) {
-            $this->soapclient = self::instantiate_soap_client($this->uname, $this->servername, $this->applicationkey);
+            $this->soapclient = $this->instantiate_soap_client($this->uname, $this->servername, $this->applicationkey);
         }
+
+        // If no soap client for this instance, instantiate one.
+        if (!isset($this->authsoapclient)) {
+            $this->authsoapclient = $this->instantiate_auth_soap_client($this->servername);
+        }
+
 
         //Get Panopto version from server if we don't already have it.
         if (!isset($this->panoptoversion))
         {
-            $this->panoptoversion = self::get_server_version($this->servername);
+            $this->panoptoversion = $this->authsoapclient->get_panopto_server_version($this->servername);
         }
 
-        if(!empty($this->panoptoversion) 
-            && version_compare($this->panoptoversion, 5) >= 0)
-        {
-            $courseinfo = $this->soapclient->provision_course_with_options($provisioninginfo);
-        }
-        else
-        {
-            $courseinfo = $this->soapclient->provision_course($provisioninginfo);
-        }
-        if (!empty($courseinfo) && !empty($courseinfo->PublicID)) {
-            self::set_panopto_course_id($this->moodlecourseid, $courseinfo->PublicID);
-            self::set_panopto_server_name($this->moodlecourseid, $this->servername);
-            self::set_panopto_app_key($this->moodlecourseid, $this->applicationkey);            
+        if(!empty($this->panoptoversion)) {
+            if(version_compare($this->panoptoversion, 5) >= 0)
+            {
+                $courseinfo = $this->soapclient->provision_course_with_options($provisioninginfo);
             }
-        
+            else
+            {
+                $courseinfo = $this->soapclient->provision_course($provisioninginfo);
+            }
+            if (    !empty($courseinfo) 
+                &&  !empty($courseinfo->PublicID)) 
+            {
+                self::set_panopto_course_id($this->moodlecourseid, $courseinfo->PublicID);
+                self::set_panopto_server_name($this->moodlecourseid, $this->servername);
+                self::set_panopto_app_key($this->moodlecourseid, $this->applicationkey);            
+            }
+        }
         return $courseinfo;
     }
 
@@ -567,8 +576,17 @@ class panopto_data {
     }
 
      /**
-     * Gives selected capabilities to specified roles.
+     * Used to instantiate a soap client for calling Panopto's iAuth service.
+     * Should be called only the first time an  auth soap client is needed for an instance.
      */
+    public function instantiate_auth_soap_client() {
+        // Instantiate our SOAP client.
+        return new panopto_auth_soap_client($this->servername);
+    }
+
+    /**
+    * Gives selected capabilities to specified roles.
+    */
     public static function set_course_role_permissions($courseid, $publisherroles, $creatorroles) {
         $coursecontext = context_course::instance($courseid);
 
@@ -609,24 +627,6 @@ class panopto_data {
             $coursecontext->mark_dirty();
         }
     }
-
-    public function get_server_version($servername)
-    {
-        $panoptoversion;
-
-        $versionsoapclient = new panopto_auth_soap_client($servername);
-
-        $serverversionresult = $versionsoapclient->get_server_version();
-
-        if(!empty($serverversionresult))
-            {
-                if(!empty($serverversionresult->{'GetServerVersionResult'}))
-                {
-                    $panoptoversion = $serverversionresult->{'GetServerVersionResult'};
-                }
-            }
-            return $panoptoversion;
-        }
 }
 
 /* End of file panopto_data.php */

@@ -9,7 +9,7 @@ class panopto_auth_soap_client extends SoapClient{
         //Set call timeout to 5 minutes.
         parent::__construct
         (
-            "https://". $servername . "/Panopto/PublicAPI/4.6/Auth.svc?wsdl"
+            "https://". $servername . "/Panopto/PublicAPI/4.0/Auth.svc?wsdl"
         );
     }
 
@@ -23,6 +23,25 @@ class panopto_auth_soap_client extends SoapClient{
     public function get_server_version()
     {
         return parent::__soapCall("GetServerVersion", array());
+    }
+
+    /**
+    * Returns the version number of the specified Panopto server.
+    */
+     public function get_panopto_server_version($servername)
+    {
+        $panoptoversion;
+
+        $serverversionresult = $this->get_server_version();
+
+        if(!empty($serverversionresult))
+        {
+            if(!empty($serverversionresult->{'GetServerVersionResult'}))
+            {
+                $panoptoversion = $serverversionresult->{'GetServerVersionResult'};
+            }
+        }
+        return $panoptoversion;
     }
 }
 
