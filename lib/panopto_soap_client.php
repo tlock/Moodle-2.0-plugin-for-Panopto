@@ -71,6 +71,30 @@ class panopto_soap_client extends soap_client_with_timeout {
         return $this->call_web_method("ProvisionCourseWithOptions", array("ProvisioningInfoWithOptions" => $provisioninginfo));
     }
 
+    
+    /**
+    *Provisioning functions that clears members with a particular role from the acl of the course's folder.
+    *These are used for paged provisioning when the user count for a course is over the threshold for a particular role.
+    */
+
+    public function provision_course_with_options_clear_publishers($provisioninginfo) {
+        return $this->call_web_method("ProvisionCourseWithOptions", array("ProvisioningInfoWithOptionsClearPublishers" => $provisioninginfo));
+    }
+
+     public function provision_course_with_options_clear_creators($provisioninginfo) {
+        return $this->call_web_method("ProvisionCourseWithOptions", array("ProvisioningInfoWithOptionsClearCreators" => $provisioninginfo));
+    }
+
+     public function provision_course_with_options_clear_viewers($provisioninginfo) {
+        return $this->call_web_method("ProvisionCourseWithOptions", array("ProvisioningInfoWithOptionsClearViewers" => $provisioninginfo));
+    }
+
+    //Function used to provision users to a course after the course itself has been provisioned. Used by
+    //make_paged_call_provision_users.
+    public function provision_users($userprovisioninginfo){
+        return $this->call_web_method("ProvisionUsers", array("UserProvisioningInfo" => $userprovisioninginfo));
+    }
+
 /**
  * Call API funtion to get list of  Panopto courses
  */
@@ -115,6 +139,7 @@ class panopto_soap_client extends soap_client_with_timeout {
             error_log("Trace: " . $e->getTraceAsString());
         }
     }
+
     /**
      *  Calls API function to delete a user's enrollment from a course
      */
@@ -176,7 +201,23 @@ class panopto_soap_client extends soap_client_with_timeout {
         {
            $soapvar = $this->get_provisioning_soap_var_with_options($value); 
         }
-         else {
+        else if ($name == "ProvisioningInfoWithOptionsClearPublishers")
+        {
+            $soapvar = $this->get_provisioning_soap_var_with_options($value, "Publisher");
+        }
+        else if ($name == "ProvisioningInfoWithOptionsClearCreators")
+        {
+            $soapvar = $this->get_provisioning_soap_var_with_options($value, "Creator");
+        }
+        else if ($name == "ProvisioningInfoWithOptionsClearViewers")
+        {
+            $soapvar = $this->get_provisioning_soap_var_with_options($value, "Viewer");
+        }
+        else if ($name == "UserProvisioningInfo")
+        {
+            $soapvar = $this->get_user_provisioning_soap_var($value);
+        }
+        else {
             $dataelement = $this->get_xml_data_element($name, $value);
             $soapvar = new SoapVar($dataelement, XSD_ANYXML);
         }
@@ -197,11 +238,34 @@ class panopto_soap_client extends soap_client_with_timeout {
         return new SoapVar($soapstruct, XSD_ANYXML);
     }
 
-        /**
+    /**
      * Creates a SOAP var formatted correctly to use in the provision_course call
      */
-    private function get_provisioning_soap_var_with_options($provisioninginfo) {
+    private function get_provisioning_soap_var_with_options($provisioninginfo, $clearrole = "NONE") {
         $soapstruct = $this->get_formatted_provisioning_info($provisioninginfo);
+        
+        //If we don't want to provision users, add a CourseOptions array with "ProvisionUsers" set to false
+        if($clearrole != "NONE")
+        {
+            $soapstruct .= "<ns1:CourseOptions>";
+            $soapstruct .= $this->get_xml_data_element("ProvisionUsers", "false");
+            
+            if($clearrole == "Publisher")
+            {
+                $soapstruct .= $this->get_xml_data_element("ClearPublishers", "true");
+            }
+            else if ($clearrole == "Creator")
+            {
+                $soapstruct .= $this->get_xml_data_element("ClearCreators", "true");
+            }
+            else if ($clearrole == "Viewer")
+            {
+                $soapstruct .= $this->get_xml_data_element("ClearViewers", "true");
+            }
+            
+            $soapstruct .= "</ns1:CourseOptions>";
+        }
+
         $soapstruct .= "<ns1:UserOptions>";
         $soapstruct .= $this->get_xml_data_element("HasMailLectureNotifications", "false");
         $soapstruct .= "</ns1:UserOptions>";
@@ -266,6 +330,64 @@ class panopto_soap_client extends soap_client_with_timeout {
         return $soapstruct;
     }
 
+    //Gets formatted soap variable used for paged calls to ProvisionUsers.
+    private function get_user_provisioning_soap_var($userprovisioninginfo)
+    {
+        $soapstruct = "";
+        if(!empty($userprovisioninginfo))
+        {
+            $soapstruct .= "<ns1:ProvisioningInfo>";
+            foreach($userprovisioninginfo as $user)
+            {
+                $soapstruct .= "<ns1:UserProvisioningInfo>";
+                $soapstruct .= $this->get_xml_data_element("Email", $user->Email);
+                $soapstruct .= $this->get_xml_data_element("FirstName", $user->FirstName);
+                $soapstruct .= $this->get_xml_data_element("LastName", $user->LastName);
+                $soapstruct .= $this->get_xml_data_element("UserKey", $user->UserKey);
+                $soapstruct .= "</ns1:UserProvisioningInfo>";
+            }
+            $soapstruct .= "</ns1:ProvisioningInfo>";
+        }
+        else 
+        {
+            $soapstruct .= "<ns1:ProvisioningInfo />";
+        }
+        $soapstruct .= "<ns1:UserOptions>";
+        $soapstruct .= $this->get_xml_data_element("HasMailLectureNotifications", "false");
+        $soapstruct .= "</ns1:UserOptions>";
+
+        return new SoapVar($soapstruct, XSD_ANYXML);
+    }
+
+    //Splits array of UserProvisioningInfo into pages, and makes separate calls to ProvisionUSers with each page to prevent timeouts
+    //when there are many users being provisioned to a course.
+    function make_paged_call_provision_users($userArray)
+    {
+        $arraysize = count($userArray);
+        $pagesize = 50;
+        $pagenumber = 1;
+
+        //While there is still at least one full page of users to provision, make calls to provision the full page-sized amount of users.
+        while($pagenumber * $pagesize <= $arraysize)
+        {
+            $userpage = array_slice(
+                    $userArray, 
+                    ($pagenumber -1) * $pagesize, 
+                    $pagesize
+                );
+            $this->provision_users($userpage);
+
+            $pagenumber += 1;
+        }
+
+        //Provision the remaining users in their own page. If there was less than a single page of users in the first place, only
+        // this logic will be called.
+        $finalpage = array_slice(
+                $userArray,
+                ($pagenumber -1) * $pagesize
+            );       
+        $this->provision_users($finalpage);
+    }
 
 }
 /* End of file PanoptoSoapClient.php */

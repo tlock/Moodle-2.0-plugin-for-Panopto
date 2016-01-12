@@ -116,11 +116,25 @@ class panopto_data {
         {
             $this->panoptoversion = $this->authsoapclient->get_panopto_server_version();
         }
+        
+        error_log(var_export($provisioninginfo, 1));
 
         if(!empty($this->panoptoversion)) {
             if(version_compare($this->panoptoversion, 5) >= 0)
             {
-                $courseinfo = $this->soapclient->provision_course_with_options($provisioninginfo);
+                //If there are more than 50 of any one type of user, do the paged form of provisioning
+                if (    (isset($provisioninginfo->Publishers) && count($provisioninginfo->Publishers) > 50)
+                    ||  (isset($provisioninginfo->Instructors) && count($provisioninginfo->Instructors)   > 50)
+                    ||  (isset($provisioninginfo->Students) && count($provisioninginfo->Students)    > 50))
+                {
+                    error_log("I'm doing it paged.");
+                    $courseinfo = $this->provision_course_with_paging($provisioninginfo);
+                }
+                else
+                {
+                    $courseinfo = $this->soapclient->provision_course_with_options($provisioninginfo);
+                }
+                
             }
             else
             {
@@ -626,6 +640,48 @@ class panopto_data {
             // Mark dirty (moodle standard for capability changes at context level).
             $coursecontext->mark_dirty();
         }
+    }
+
+    //Function used to provision when the number of users to be provisioned in a single role is over the threshold value.
+    //Calls ProvisionCourseWithOptions once for each role, clearing any users with that role from the course's folder's acl
+    //before re-adding all current users to the acl, but not actually provisioning the users. After each call, a paged call to 
+    //ProvisionUsers is made to provision the users with the corresponding role.  
+    public function provision_course_with_paging($provisioninginfo)
+    {
+        //Instantiate soap client if it hasn't been already
+         if (!isset($this->soapclient)) {
+            $this->soapclient = $this->instantiate_soap_client($this->uname, $this->servername, $this->applicationkey);
+        }
+        
+        //Sync publisher acl data
+        $courseinfo = $this->soapclient->provision_course_with_options_clear_publishers($provisioninginfo);
+        
+        //Provision publishers to course
+        if(isset($provisioninginfo->Publishers))
+        {   
+            $this->soapclient->make_paged_call_provision_users($provisioninginfo->Publishers);
+        }
+        
+        //Sync Creator acl data
+        $courseinfo = $this->soapclient->provision_course_with_options_clear_creators($provisioninginfo);
+
+        //Provision creators to course
+        if(isset($provisioninginfo->Instructors))
+        {
+            $this->soapclient->make_paged_call_provision_users($provisioninginfo->Instructors);
+        }
+        
+        //Sync Viewer acl data
+        $courseinfo = $this->soapclient->provision_course_with_options_clear_viewers($provisioninginfo);
+
+        //PRovision viewers to course
+        if(isset($provisioninginfo->Students))
+        {
+            $this->soapclient->make_paged_call_provision_users($provisioninginfo->Students);
+        }
+        
+        //Return course info to be displayed.
+        return $courseinfo;
     }
 }
 

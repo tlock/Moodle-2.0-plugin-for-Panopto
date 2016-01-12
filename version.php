@@ -23,7 +23,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 //Current internal version number.
-$internalversion =2015131501;
+$internalversion = 2016011201;
 
 //Initialize $plugin object if it hasn't been already
 $plugin = (isset($plugin) ? $plugin : new stdClass());
@@ -39,5 +39,4 @@ $plugin->maturity = MATURITY_STABLE;
 $plugin->dependencies = array(
     'mod_forum' => ANY_VERSION
 );
-
 /* End of file version.php */
