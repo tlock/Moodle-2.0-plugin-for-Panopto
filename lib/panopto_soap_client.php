@@ -77,17 +77,11 @@ class panopto_soap_client extends soap_client_with_timeout {
     *These are used for paged provisioning when the user count for a course is over the threshold for a particular role.
     */
 
-    public function provision_course_with_options_clear_publishers($provisioninginfo) {
-        return $this->call_web_method("ProvisionCourseWithOptions", array("ProvisioningInfoWithOptionsClearPublishers" => $provisioninginfo));
+    public function provision_course_with_course_options($provisioninginfo, $options) {
+        return $this->call_web_method("ProvisionCourseWithOptions", array("ProvisioningInfoWithCourseOptions" => array("ProvisioningInfo" => $provisioninginfo, "CourseOptions" => $options)));
     }
 
-     public function provision_course_with_options_clear_creators($provisioninginfo) {
-        return $this->call_web_method("ProvisionCourseWithOptions", array("ProvisioningInfoWithOptionsClearCreators" => $provisioninginfo));
-    }
-
-     public function provision_course_with_options_clear_viewers($provisioninginfo) {
-        return $this->call_web_method("ProvisionCourseWithOptions", array("ProvisioningInfoWithOptionsClearViewers" => $provisioninginfo));
-    }
+    
 
     //Function used to provision users to a course after the course itself has been provisioned. Used by
     //make_paged_call_provision_users.
@@ -172,6 +166,7 @@ class panopto_soap_client extends soap_client_with_timeout {
      */
     private function call_web_method($methodname, $namedparams = array(), $auth = true) {
         $soapvars = $this->get_panopto_soap_vars($namedparams);
+        
         // Include API user and auth code params unless $auth is set to false.
         if ($auth) {
             $authvars = $this->get_panopto_soap_vars($this->authparams);
@@ -201,17 +196,9 @@ class panopto_soap_client extends soap_client_with_timeout {
         {
            $soapvar = $this->get_provisioning_soap_var_with_options($value); 
         }
-        else if ($name == "ProvisioningInfoWithOptionsClearPublishers")
+        else if ($name == "ProvisioningInfoWithCourseOptions")
         {
-            $soapvar = $this->get_provisioning_soap_var_with_options($value, "Publisher");
-        }
-        else if ($name == "ProvisioningInfoWithOptionsClearCreators")
-        {
-            $soapvar = $this->get_provisioning_soap_var_with_options($value, "Creator");
-        }
-        else if ($name == "ProvisioningInfoWithOptionsClearViewers")
-        {
-            $soapvar = $this->get_provisioning_soap_var_with_options($value, "Viewer");
+            $soapvar = $this->get_provisioning_soap_var_with_course_options($value["ProvisioningInfo"], $value["CourseOptions"]);           
         }
         else if ($name == "UserProvisioningInfo")
         {
@@ -241,35 +228,35 @@ class panopto_soap_client extends soap_client_with_timeout {
     /**
      * Creates a SOAP var formatted correctly to use in the provision_course call
      */
-    private function get_provisioning_soap_var_with_options($provisioninginfo, $clearrole = "NONE") {
+    private function get_provisioning_soap_var_with_options($provisioninginfo) {
         $soapstruct = $this->get_formatted_provisioning_info($provisioninginfo);
-        
-        //If we don't want to provision users, add a CourseOptions array with "ProvisionUsers" set to false
-        if($clearrole != "NONE")
+        $soapstruct .= "<ns1:UserOptions>";
+        $soapstruct .= $this->get_xml_data_element("HasMailLectureNotifications", "false");
+        $soapstruct .= "</ns1:UserOptions>";
+
+        return new SoapVar($soapstruct, XSD_ANYXML);
+    }
+
+    private function get_provisioning_soap_var_with_course_options($provisioninginfo, $courseoptions)
+    {
+        $soapstruct = $this->get_formatted_provisioning_info($provisioninginfo);
+
+
+         //If we don't want to provision users, add a CourseOptions array with "ProvisionUsers" set to false
+        if($courseoptions != null)
         {
             $soapstruct .= "<ns1:CourseOptions>";
-            $soapstruct .= $this->get_xml_data_element("ProvisionUsers", "false");
-            
-            if($clearrole == "Publisher")
+            foreach($courseoptions as $key => $value)
             {
-                $soapstruct .= $this->get_xml_data_element("ClearPublishers", "true");
+                $soapstruct .= $this->get_xml_data_element($key, $value);
             }
-            else if ($clearrole == "Creator")
-            {
-                $soapstruct .= $this->get_xml_data_element("ClearCreators", "true");
-            }
-            else if ($clearrole == "Viewer")
-            {
-                $soapstruct .= $this->get_xml_data_element("ClearViewers", "true");
-            }
-            
+
             $soapstruct .= "</ns1:CourseOptions>";
         }
 
         $soapstruct .= "<ns1:UserOptions>";
         $soapstruct .= $this->get_xml_data_element("HasMailLectureNotifications", "false");
         $soapstruct .= "</ns1:UserOptions>";
-
         return new SoapVar($soapstruct, XSD_ANYXML);
     }
 
