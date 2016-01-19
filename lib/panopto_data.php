@@ -152,8 +152,7 @@ class panopto_data {
                 else
                 {
                     $courseinfo = $this->soapclient->provision_course_with_options($provisioninginfo);
-                }
-                
+                }          
             }
             else
             {
