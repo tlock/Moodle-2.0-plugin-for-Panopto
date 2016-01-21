@@ -25,7 +25,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['add_to_panopto'] = 'Add this course to Panopto (re-add to sync user lists)';
 $string['back_to_config'] = 'Back to config';
 $string['back_to_course'] = 'Back to course';
-$string['block_edit_error'] = 'Cannot configure block instance: ' . $string['unconfigured'];
+$string['block_edit_error'] = 'Cannot configure block instance: Global configuration incomplete. Please contact your system administrator.';
 $string['block_edit_header'] = 'Select the Panopto course to display in this block.';
 $string['block_global_add_courses'] = 'Add Moodle courses to Panopto';
 $string['block_global_application_key'] = 'Application Key';
