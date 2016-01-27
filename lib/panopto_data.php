@@ -670,6 +670,21 @@ class panopto_data {
         return $courseinfo;
     }
 
+    private function paged_provision_by_role($roleName, &$userarray, &$courseoptions, &$courseinfo)
+    {
+        if(isset($provisioninginfo->$roleName))
+        {
+            $courseoptions["Clear" . $roleName] = "true";
+            $userarray = array_merge($userarray, $provisioninginfo->$roleName);
+            if(count($userarray) > self::PAGE_SIZE)
+            {
+                $courseinfo = $this->perform_provisioning_operations($userarray, $provisioninginfo, $courseoptions);
+                $userarray = [];
+                $courseoptions = array("ProvisionUsers" => "false");
+            }
+        }
+    }
+
     //Function used to provision when the number of users to be provisioned in a single role is over the threshold value.
     //Each role is considered one at a time. If there are more users in a particular role than the threshold for paging, the
     //Course data is synced for that role, and that role's users are provisioned in a paged manner. If there are not more users than the threshold,
@@ -683,41 +698,11 @@ class panopto_data {
         }
         
         $courseinfo = new stdClass;
-        
+        $courseoptions = array("ProvisionUsers" => "false");
         $userarray = [];
-        if(isset($provisioninginfo->Publishers))
-        {
-            $courseoptions["ClearPublishers"] = "true";
-            $userarray = array_merge($userarray, $provisioninginfo->Publishers);
-            if(count($userarray) > self::PAGE_SIZE)
-            {
-                $courseinfo = $this->perform_provisioning_operations($userarray, $provisioninginfo, $courseoptions);
-                $userarray = [];
-                $courseoptions = array("ProvisionUsers" => "false");
-            }
-        }
-        if(isset($provisioninginfo->Instructors))
-        {
-            $courseoptions["ClearInstructors"] = "true";
-            $userarray = array_merge($userarray, $provisioninginfo->Instructors);
-            if(count($userarray) > self::PAGE_SIZE)
-            {
-                $courseinfo = $this->perform_provisioning_operations($userarray, $provisioninginfo, $courseoptions);
-                $userarray = [];
-                $courseoptions = array("ProvisionUsers" => "false");
-            }
-        }
-        if(isset($provisioninginfo->Students))
-        {
-            $courseoptions["ClearStudents"] = "true";
-            $userarray = array_merge($userarray, $provisioninginfo->Students);
-            if(count($userarray) > self::PAGE_SIZE)
-            {
-                $courseinfo = $this->perform_provisioning_operations($userarray, $provisioninginfo, $courseoptions);
-                $userarray = [];
-                $courseoptions = array("ProvisionUsers" => "false");
-            }
-        }
+        $this->paged_provision_by_role("Publishers", $userarray, $courseoptions, $courseinfo);
+        $this->paged_provision_by_role("Instructors", $userarray, $courseoptions, $courseinfo);
+        $this->paged_provision_by_role("Students", $userarray, $courseoptions, $courseinfo);
 
         //If any users have yet to be provisioned, do it now.
         if(!empty($userarray))
