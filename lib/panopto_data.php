@@ -670,8 +670,9 @@ class panopto_data {
         return $courseinfo;
     }
 
-    private function paged_provision_by_role($roleName, &$userarray, &$courseoptions, &$courseinfo)
+    private function paged_provision_by_role($roleName, $provisioninginfo, &$userarray, &$courseoptions, &$courseinfo)
     {
+
         if(isset($provisioninginfo->$roleName))
         {
             $courseoptions["Clear" . $roleName] = "true";
@@ -700,9 +701,11 @@ class panopto_data {
         $courseinfo = new stdClass;
         $courseoptions = array("ProvisionUsers" => "false");
         $userarray = [];
-        $this->paged_provision_by_role("Publishers", $userarray, $courseoptions, $courseinfo);
-        $this->paged_provision_by_role("Instructors", $userarray, $courseoptions, $courseinfo);
-        $this->paged_provision_by_role("Students", $userarray, $courseoptions, $courseinfo);
+        
+        $this->paged_provision_by_role("Publishers", $provisioninginfo, $userarray, $courseoptions, $courseinfo);
+        $this->paged_provision_by_role("Instructors", $provisioninginfo, $userarray, $courseoptions, $courseinfo);
+        $this->paged_provision_by_role("Students", $provisioninginfo, $userarray, $courseoptions, $courseinfo);
+
 
         //If any users have yet to be provisioned, do it now.
         if(!empty($userarray))
