@@ -53,5 +53,5 @@ YUI.add('moodle-block_panopto-asyncload', function(Y) {
             }
         };
 
-    }, '@VERSION@', {requires: ['node', 'yui-later', 'io-base', 'querystring-stringify-simple','console']}
+    }, '@VERSION@', {requires: ['console', 'node', 'io-base', 'querystring-stringify-simple']}
 );
