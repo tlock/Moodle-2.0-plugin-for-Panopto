@@ -24,7 +24,7 @@ YUI.add('moodle-block_panopto-asyncload', function(Y) {
                                         //Remove loading text
                                         mynode.removeChild(Y.one('#loading_text'));
                                         //Add Panopto content to block display
-                                        mynode.append(o.responseText);
+                                        mynode.set('innerHTML', o.responseText);
                                     } catch (err) {
                                         Y.log(err.message);
                                     }
@@ -34,7 +34,7 @@ YUI.add('moodle-block_panopto-asyncload', function(Y) {
                                         //Remove loading text
                                         mynode.removeChild(Y.one('#loading_text'));
                                         //Display error in block.
-                                        mynode.append(o.responseText)
+                                        mynode.set('innerHTML', o.responseText)
                                     } catch(err) {
                                         Y.log(err.message);
                                     }

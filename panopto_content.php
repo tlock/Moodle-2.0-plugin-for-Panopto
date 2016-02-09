@@ -1,17 +1,14 @@
 <?php
 define('AJAX_SCRIPT', true);
-require('../../config.php');
 
+require('../../config.php');
 require_once("lib/panopto_data.php");
 
-error_log("here");
 try {
-    error_log("now here");
     require_login();
     require_sesskey();
     header('Content-Type: text/html; charset=utf-8');
     global $CFG;
-
 
         $courseid = $_POST["courseid"];
 
@@ -21,9 +18,10 @@ try {
         panopto_data::set_course_role_permissions($courseid, $mapping['publisher'], $mapping['creator']);
 
         $content = new stdClass;
+        
         //Initialize $content->text to an empty string here to avoid trying to append to it before
-+        //it has been initialized and throwing a warning. Bug 33163
-+        $content->text = "";
+        //it has been initialized and throwing a warning. Bug 33163 
+        $content->text = "";
 
         // Construct the Panopto data proxy object.
         $panoptodata = new panopto_data($courseid);
@@ -31,7 +29,7 @@ try {
         if (empty($panoptodata->servername) || empty($panoptodata->instancename) || empty($panoptodata->applicationkey)) {
             $content->text = get_string('unprovisioned', 'block_panopto') . "
             <br/><br/>
-            <a href='$CFG->wwwroot/blocks/panopto/provision_course_internal.php?id=$courseid'>Provision Course</a>";
+            <a href='$CFG->wwwroot/blocks/panopto/provision_course_internal.php?id=$courseid'>" . get_string('provision_course_link_text', 'block_panopto'). "</a>";
             $content->footer = "";
 
             return $content;
@@ -151,44 +149,7 @@ try {
                                                             (<a href='$systeminfo->RecorderDownloadUrl'>Windows</a>
                                                             | <a href='$systeminfo->MacRecorderDownloadUrl'>Mac</a>)</span>
                                                 </div>";
-                    }
-
-                    $content->text .= '
-                        <script type="text/javascript">
-                    // Function to pop up Panopto live note taker.
-                    function panopto_launchNotes(url) {
-                        // Open empty notes window, then POST SSO form to it.
-                        var notesWindow = window.open("", "PanoptoNotes", "width=500,height=800,resizable=1,scrollbars=0,status=0,location=0");
-                        document.SSO.action = url;
-                        document.SSO.target = "PanoptoNotes";
-                        document.SSO.submit();
-
-                        // Ensure the new window is brought to the front of the z-order.
-                        notesWindow.focus();
-                    }
-
-                    function panopto_startSSO(linkElem) {
-                        document.SSO.action = linkElem.href;
-                        document.SSO.target = "_blank";
-                        document.SSO.submit();
-
-                        // Cancel default link navigation.
-                        return false;
-                    }
-
-                    function panopto_toggleHiddenLectures() {
-                        var showAllToggle = document.getElementById("showAllToggle");
-                        var hiddenLecturesDiv = document.getElementById("hiddenLecturesDiv");
-
-                        if(hiddenLecturesDiv.style.display == "block") {
-                            hiddenLecturesDiv.style.display = "none";
-                            showAllToggle.innerHTML = "' . get_string('show_all', 'block_panopto') . '";
-                        } else {
-                        hiddenLecturesDiv.style.display = "block";
-                        showAllToggle.innerHTML = "' . get_string('show_less', 'block_panopto') . '";
-                    }
-                }
-                </script>';
+                    }                 
                 }
             }
         } catch (Exception $e) {
