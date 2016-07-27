@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__) . '/../../lib/panopto_data.php');
 
 /**
- * Panopto "update user" task.
+ * Panopto "provision course" task.
  */
 class provision_course extends \core\task\adhoc_task {
 
