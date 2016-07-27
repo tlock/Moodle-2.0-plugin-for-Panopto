@@ -39,7 +39,6 @@ class provision_course extends \core\task\adhoc_task {
     public function execute() {
         $eventdata = (array) $this->get_custom_data();
 
-        error_log(var_export($eventdata, 1));
         $panopto = new \panopto_data($eventdata['courseid']);
         $panopto->servername = $eventdata['servername'];
         $panopto->applicationkey =$eventdata['appkey'];
