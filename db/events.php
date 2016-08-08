@@ -25,13 +25,13 @@ defined('MOODLE_INTERNAL') || die();
 $observers = array(
     // User enrolled event.
     array(
-        'eventname' => '\core\event\user_enrolment_created',
-        'callback' => 'block_panopto_rollingsync::enrolmentcreated',
+        'eventname' => '\core\event\user_enrollment_created',
+        'callback' => 'block_panopto_rollingsync::enrollmentcreated',
     ),
     // User unenrolled event.
     array(
-        'eventname' => '\core\event\user_enrolment_deleted',
-        'callback' => 'block_panopto_rollingsync::enrolmentdeleted',
+        'eventname' => '\core\event\user_enrollment_deleted',
+        'callback' => 'block_panopto_rollingsync::enrollmentdeleted',
     ),
     // Event when user has role added to enrollment.
     array(
