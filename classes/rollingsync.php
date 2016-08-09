@@ -40,7 +40,7 @@ class block_panopto_rollingsync {
     /**
      * Called when an enrollment has been created.
      */
-    public static function enrollmentcreated(\core\event\user_enrollment_created $event) {
+    public static function enrollmentcreated(\core\event\user_enrolment_created $event) {
         global $CFG;
 
         if (\panopto_data::get_panopto_course_id($event->courseid) === false
@@ -67,7 +67,7 @@ class block_panopto_rollingsync {
     /**
      * Called when an enrollment has been deleted.
      */
-    public static function enrollmentdeleted(\core\event\user_enrollment_deleted $event) {
+    public static function enrollmentdeleted(\core\event\user_enrolment_deleted $event) {
         global $CFG;
 
         if (\panopto_data::get_panopto_course_id($event->courseid) === false
