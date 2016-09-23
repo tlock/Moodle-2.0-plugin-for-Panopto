@@ -13,13 +13,16 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
+ * the main config settings for the panopto block
+ *
  * @package block_panopto
- * @copyright  Panopto 2009 - 2015 /With contributions from Spenser Jones (sjones@ambrose.edu)
+ * @copyright  Panopto 2009 - 2016 /With contributions from Spenser Jones (sjones@ambrose.edu)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die;
-include 'version.php';
+require('version.php');
 global $CFG;
 global $numservers;
 $numservers = $CFG->block_panopto_server_number;
@@ -29,7 +32,8 @@ if ($ADMIN->fulltree) {
     $settings->add(
             new admin_setting_configselect(
                     'block_panopto_server_number',
-                    'Number of Panopto Servers', 'Click \'Save Changes\' to update number of servers',
+                    get_string('block_panopto_server_number_name', 'block_panopto'),
+                    get_string('block_panopto_server_number_description', 'block_panopto'),
                     $default,
                     range(1, 10, 1)
                     ));
@@ -44,11 +48,11 @@ if ($ADMIN->fulltree) {
         $settings->add(
                 new admin_setting_configtext(
                         'block_panopto_server_name' . ($x + 1),
-                        get_string('block_global_hostname', 'block_panopto') . " " . ($x + 1), '', '', PARAM_TEXT));
+                        get_string('block_global_hostname', 'block_panopto') . ' ' . ($x + 1), '', '', PARAM_TEXT));
         $settings->add(
                 new admin_setting_configtext(
                         'block_panopto_application_key' . ($x + 1),
-                        get_string('block_global_application_key', 'block_panopto') . " " . ($x + 1), '', '', PARAM_TEXT));
+                        get_string('block_global_application_key', 'block_panopto') . ' ' . ($x + 1), '', '', PARAM_TEXT));
     }
     $settings->add(
             new admin_setting_configcheckbox(
@@ -63,9 +67,13 @@ if ($ADMIN->fulltree) {
             )
     );
 
-    $version_number = '<b>' . $internalversion . '</b><br/>';
-    $settings->add(new admin_setting_heading('block_panopto_display_version', '', 'Current version of the panopto block: ' . $version_number));
-    $link = '<a href="' . $CFG->wwwroot . '/blocks/panopto/provision_course.php">' . get_string('block_global_add_courses', 'block_panopto') . '</a>';
+    $versionnumber = '<b>' . $internalversion . '</b><br/>';
+    $settings->add(new admin_setting_heading('block_panopto_display_version', '',
+        'Current version of the panopto block: ' . $versionnumber));
+
+    $link = '<a href="' . $CFG->wwwroot . '/blocks/panopto/provision_course.php">' .
+        get_string('block_global_add_courses', 'block_panopto') . '</a>';
+
     $settings->add(new admin_setting_heading('block_panopto_add_courses', '', $link));
 }
 /* End of file settings.php */

@@ -15,8 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * the provision course logic for panopto
+ *
  * @package block_panopto
- * @copyright  Panopto 2009 - 2015 /With contributions from Spenser Jones (sjones@ambrose.edu)
+ * @copyright  Panopto 2009 - 2016 /With contributions from Spenser Jones (sjones@ambrose.edu)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -39,7 +41,9 @@ for ($x = 0; $x < $maxval; $x++) {
     // Generate strings corresponding to potential servernames in $CFG.
     $thisservername = 'block_panopto_server_name' . ($x + 1);
     $thisappkey = 'block_panopto_application_key' . ($x + 1);
-    if ((isset($CFG->$thisservername) && !is_null_or_empty_string($CFG->$thisservername)) && (!is_null_or_empty_string($CFG->$thisappkey))) {
+
+    $hasservername = isset($CFG->$thisservername) && !is_null_or_empty_string($CFG->$thisservername);
+    if ($hasservername && (!is_null_or_empty_string($CFG->$thisappkey))) {
         $aserverarray[$x] = $CFG->$thisservername;
         $appkeyarray[$x] = $CFG->$thisappkey;
     }
@@ -48,13 +52,19 @@ for ($x = 0; $x < $maxval; $x++) {
 /**
  * Create form for server selection.
  *
- * @package block_panopto
  * @copyright  Panopto 2009 - 2015
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class panopto_provision_form extends moodleform {
 
+    /**
+     * @var string $title
+     */
     protected $title = '';
+
+    /**
+     * @var string $description
+     */
     protected $description = '';
 
     /**
@@ -66,8 +76,8 @@ class panopto_provision_form extends moodleform {
         global $aserverarray;
 
         $mform = & $this->_form;
-        $select_query = "id <> 1";
-        $coursesraw = $DB->get_records_select('course', $select_query, null, 'id, shortname, fullname');
+        $selectquery = 'id <> 1';
+        $coursesraw = $DB->get_records_select('course', $selectquery, null, 'id, shortname, fullname');
         $courses = array();
         if ($coursesraw) {
             foreach ($coursesraw as $course) {
@@ -157,14 +167,14 @@ if ($mform->is_cancelled()) {
             // Set the current Moodle course to retrieve info for / provision.
             $panoptodata->moodlecourseid = $courseid;
 
-            // If an application key and server name are pre-set (happens when provisioning from multi-select page) use those, otherwise retrieve
-            // values from the db.
+            // If an application key and server name are pre-set (happens when provisioning from multi-select page) use those,
+            // otherwise retrieve values from the db.
             if (isset($selectedserver)) {
                 $panoptodata->servername = $selectedserver;
             } else {
                 $panoptodata->servername = $panoptodata->get_panopto_servername($panoptodata->moodlecourseid);
             }
-             
+
             if (isset($selectedkey)) {
                 $panoptodata->applicationkey = $selectedkey;
             } else {
@@ -174,7 +184,7 @@ if ($mform->is_cancelled()) {
             $provisioneddata = $panoptodata->provision_course($provisioningdata);
             include('views/provisioned_course.html.php');
         }
-        echo "<a href='$returnurl'>" . get_string('back_to_config', 'block_panopto') . "</a>";
+        echo "<a href='$returnurl'>" . get_string('back_to_config', 'block_panopto') . '</a>';
     } else {
         $mform->display();
     }
@@ -183,7 +193,9 @@ if ($mform->is_cancelled()) {
 }
 
 /**
- *Returns true if a string is null or empty, false otherwise
+ * Returns true if a string is null or empty, false otherwise
+ *
+ * @param string $name the string being checked for null or empty
  */
 function is_null_or_empty_string($name) {
     return (!isset($name) || trim($name) === '');

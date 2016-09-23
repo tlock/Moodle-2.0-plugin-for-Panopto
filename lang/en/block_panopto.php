@@ -15,8 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * This file contains all of the language strings needed by panopto.
+ *
  * @package block_panopto
- * @copyright  Panopto 2009 - 2015 with contributions from Spenser Jones (sjones@ambrose.edu)
+ * @copyright  Panopto 2009 - 2016 with contributions from Spenser Jones (sjones@ambrose.edu)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -32,6 +34,8 @@ $string['block_global_application_key'] = 'Application Key';
 $string['block_global_hostname'] = 'Panopto Server Hostname';
 $string['block_global_instance_description'] = 'This value is prefixed before usernames in Panopto.';
 $string['block_global_instance_name'] = 'Moodle Instance Name';
+$string['block_panopto_server_number_description'] = 'Click \'Save Changes\' to update number of servers.';
+$string['block_panopto_server_number_name'] = 'Number of Panopto Servers';
 $string['block_panopto_async_tasks'] = 'Asynchronous enrollment sync';
 $string['block_panopto_auto_provision'] = 'Automatically provision newly created courses';
 $string['completed_recordings'] = 'Completed Recordings';
@@ -75,8 +79,7 @@ $string['publisher'] = 'Publisher';
 $string['publishers'] = 'Publishers';
 $string['result'] = 'Result';
 $string['role_map_header'] = 'Change Panopto Role Mappings';
-$string['role_map_info_text'] = "Choose which Panopto roles a user's Moodle role will map to. <br> Unmapped roles will be given the 'Viewer' role in Panopto.
- <br><br> ";
+$string['role_map_info_text'] = "Choose which Panopto roles a user's Moodle role will map to. <br> Unmapped roles will be given the 'Viewer' role in Panopto. <br><br>";
 $string['select_server'] = 'Select a Panopto server';
 $string['show_all'] = 'Show All';
 $string['show_all'] = 'Show All';

@@ -18,12 +18,17 @@
  * Scripts used for upgrading database when upgrading block from an older version
  *
  * @package block_panopto
- * @copyright  Panopto 2009 - 2015 with contributions from Spenser Jones (sjones@ambrose.edu)
+ * @copyright  Panopto 2009 - 2016 with contributions from Spenser Jones (sjones@ambrose.edu)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Upgrades panopto for xmldb
+ *
+ * @param int $oldversion the previous version panopto is being upgraded from
+ */
 function xmldb_block_panopto_upgrade($oldversion = 0) {
     global $CFG, $DB;
     $dbman = $DB->get_manager();

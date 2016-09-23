@@ -15,8 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * adds rolling sync capability to panopto
+ *
  * @package block_panopto
- * @copyright  Panopto 2009 - 2015 /With contributions from Spenser Jones (sjones@ambrose.edu) and by Skylar Kelty <S.Kelty@kent.ac.uk>
+ * @copyright Panopto 2009 - 2016 /With contributions from Spenser Jones (sjones@ambrose.edu),
+ * Skylar Kelty <S.Kelty@kent.ac.uk>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,24 +31,27 @@ require_once(dirname(__FILE__) . '/../lib/panopto_data.php');
 /**
  * Handlers for each different event type.
  *
- * @package block_panopto
- * @copyright Panopto 2009 - 2015
+ * @copyright Panopto 2009 - 2016
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
 class block_panopto_rollingsync {
 
-    private static $requiredVersion = 2014051200; //Moodle version 2.7 or higher required for rolling sync tasks.
+    /**
+     * @var int $requireversion Moodle version 2.7 or higher required for rolling sync tasks.
+     */
+    private static $requiredversion = 2014051200;
 
     /**
      * Called when an enrollment has been created.
+     *
+     * @param \core\event\user_enrolment_created $event
      */
     public static function enrollmentcreated(\core\event\user_enrolment_created $event) {
         global $CFG;
 
         if (\panopto_data::get_panopto_course_id($event->courseid) === false
-            || $CFG->version < self::$requiredVersion) 
-        {
+            || $CFG->version < self::$requiredversion) {
             return;
         }
 
@@ -54,7 +60,7 @@ class block_panopto_rollingsync {
             'courseid' => $event->courseid,
             'relateduserid' => $event->relateduserid,
             'contextid' => $event->contextid,
-            'eventtype' => "enroll_add"
+            'eventtype' => 'enroll_add'
         ));
 
         if ($CFG->block_panopto_async_tasks) {
@@ -66,12 +72,14 @@ class block_panopto_rollingsync {
 
     /**
      * Called when an enrollment has been deleted.
+     *
+     * @param \core\event\user_enrolment_deleted $event
      */
     public static function enrollmentdeleted(\core\event\user_enrolment_deleted $event) {
         global $CFG;
 
         if (\panopto_data::get_panopto_course_id($event->courseid) === false
-            || $CFG->version < self::$requiredVersion) {
+            || $CFG->version < self::$requiredversion) {
             return;
         }
 
@@ -80,7 +88,7 @@ class block_panopto_rollingsync {
             'courseid' => $event->courseid,
             'relateduserid' => $event->relateduserid,
             'contextid' => $event->contextid,
-            'eventtype' => "enroll_remove"
+            'eventtype' => 'enroll_remove'
         ));
 
         if ($CFG->block_panopto_async_tasks) {
@@ -92,12 +100,14 @@ class block_panopto_rollingsync {
 
     /**
      * Called when an role has been added.
+     *
+     * @param \core\event\role_assigned $event
      */
     public static function roleadded(\core\event\role_assigned $event) {
         global $CFG;
 
         if (\panopto_data::get_panopto_course_id($event->courseid) === false
-            || $CFG->version < self::$requiredVersion) {
+            || $CFG->version < self::$requiredversion) {
             return;
         }
 
@@ -106,7 +116,7 @@ class block_panopto_rollingsync {
             'courseid' => $event->courseid,
             'relateduserid' => $event->relateduserid,
             'contextid' => $event->contextid,
-            'eventtype' => "role"
+            'eventtype' => 'role'
         ));
 
         if ($CFG->block_panopto_async_tasks) {
@@ -118,12 +128,16 @@ class block_panopto_rollingsync {
 
     /**
      * Called when an role has been removed.
+     *
+     * @param \core\event\role_unassigned $event
      */
     public static function roledeleted(\core\event\role_unassigned $event) {
         global $CFG;
 
-        if (\panopto_data::get_panopto_course_id($event->courseid) === false
-            || $CFG->version < self::$requiredVersion) {
+        $panoptocourseid = \panopto_data::get_panopto_course_id($event->courseid);
+        $hasminimumversion = $CFG->version >= self::$requiredversion;
+
+        if ($panoptocourseid === false || !$hasminimumversion) {
             return;
         }
 
@@ -132,7 +146,7 @@ class block_panopto_rollingsync {
             'courseid' => $event->courseid,
             'relateduserid' => $event->relateduserid,
             'contextid' => $event->contextid,
-            'eventtype' => "role"
+            'eventtype' => 'role'
         ));
 
         if ($CFG->block_panopto_async_tasks) {
@@ -142,21 +156,26 @@ class block_panopto_rollingsync {
         }
     }
 
+
+    /**
+     * Called when a course has been created.
+     *
+     * @param \core\event\course_created $event
+     */
     public static function coursecreated(\core\event\course_created $event) {
         global $CFG;
 
-        if($CFG->block_panopto_auto_provision_new_courses){
+        if ($CFG->block_panopto_auto_provision_new_courses) {
             $task = new \block_panopto\task\provision_course();
             $task->set_custom_data(array(
                 'courseid' => $event->courseid,
                 'relateduserid' => $event->relateduserid,
                 'contextid' => $event->contextid,
-                'eventtype' => "role",
-                'servername'=> $CFG->block_panopto_server_name1,
+                'eventtype' => 'role',
+                'servername' => $CFG->block_panopto_server_name1,
                 'appkey' => $CFG->block_panopto_application_key1
             ));
             $task->execute();
         }
     }
-
 }
