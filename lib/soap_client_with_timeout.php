@@ -56,6 +56,9 @@ class soap_client_with_timeout extends SoapClient
             // Only set timeout if it is a positive value.
             if ($options['timeout'] > 0) {
                 $this->timeout = $options['timeout'];
+            } else {
+                // Otherwise, keep default and log that timeout was not set.
+                error_log("Soap Client timeout must be greater than zero. Reverting to default timeout of 60 seconds.");
             }
         }
         // After setting timeout, call the parent constructor.
@@ -98,15 +101,15 @@ class soap_client_with_timeout extends SoapClient
 
                 // If cURL throws an error, log it.
                 if (curl_errno($curl) !== 0) {
-                    $panoptoerror = 'cURL error';
+                    error_log(curl_error($curl));
                 }
             } else {
                 // A cURL option could not be set.
-                $panoptoerror = 'Failed setting cURL options.';
+                error_log('Failed setting cURL options.');
             }
         } else {
             // ... cURL was not initialized properly.
-            $panoptoerror = "Couldn't initialize cURL to make SOAP calls";
+            error_log("Couldn't initialize cURL to make SOAP calls");
         }
 
         // Close cURL session.

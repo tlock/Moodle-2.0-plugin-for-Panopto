@@ -627,7 +627,9 @@ class panopto_data {
         try {
             $result = $this->soapclient->add_user_to_course($this->sessiongroupid, $role, $userkey);
         } catch (Exception $e) {
-            $catchexception = $e;
+            error_log("Error: " . $e->getMessage());
+            error_log("Code: " . $e->getCode());
+            error_log("Line: " . $e->getLine());
         }
         return $result;
     }
@@ -658,7 +660,9 @@ class panopto_data {
         try {
             $result = $this->soapclient->remove_user_from_course($this->sessiongroupid, $role, $userkey);
         } catch (Exception $e) {
-            $catchexception = $e;
+            error_log("Error: " . $e->getMessage());
+            error_log("Code: " . $e->getCode());
+            error_log("Line: " . $e->getLine());
         }
         return $result;
     }
@@ -695,7 +699,9 @@ class panopto_data {
         try {
             $result = $this->soapclient->change_user_role($this->sessiongroupid, $role, $userkey);
         } catch (Exception $e) {
-            $catchexception = $e;
+            error_log("Error: " . $e->getMessage());
+            error_log("Code: " . $e->getCode());
+            error_log("Line: " . $e->getLine());
         }
         return $result;
     }

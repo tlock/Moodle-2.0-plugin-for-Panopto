@@ -191,7 +191,10 @@ class panopto_soap_client extends soap_client_with_timeout {
             return $this->call_web_method('AddUserToCourse', array('CoursePublicID' => $sessiongroupid,
                 'Role' => $role, 'UserKey' => $userkey));
         } catch (Exception $e) {
-            $errorexception = $e;
+            error_log("Error: " . $e->getMessage());
+            error_log("Code: " . $e->getCode());
+            error_log("Line: " . $e->getLine());
+            error_log("Trace: " . $e->getTraceAsString());
         }
     }
 
@@ -208,7 +211,10 @@ class panopto_soap_client extends soap_client_with_timeout {
                 'Role' => $role, 'UserKey' => $userkey));
 
         } catch (Exception $e) {
-            $errorexception = $e;
+            error_log("Error: " . $e->getMessage());
+            error_log("Code: " . $e->getCode());
+            error_log("Line: " . $e->getLine());
+            error_log("Trace: " . $e->getTraceAsString());
         }
     }
     /**
@@ -224,7 +230,10 @@ class panopto_soap_client extends soap_client_with_timeout {
                 'Role' => $role, 'UserKey' => $userkey));
 
         } catch (Exception $e) {
-            $errorexception = $e;
+            error_log("Error: " . $e->getMessage());
+            error_log("Code: " . $e->getCode());
+            error_log("Line: " . $e->getLine());
+            error_log("Trace: " . $e->getTraceAsString());
         }
     }
     // Helper functions for calling Panopto ClientData web methods in non-WSDL mode.
