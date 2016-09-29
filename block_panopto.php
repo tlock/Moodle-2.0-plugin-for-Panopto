@@ -191,13 +191,13 @@ class block_panopto extends block_base {
     }
 
     /**
-     * Return applicable formats
+     * Which page types this block may appear on
+     * @return array
      */
-    public function applicable_formats() {
-        return array(
-            'my' => false,
-            'all' => true
-        );
+    function applicable_formats() {
+        // Since block is dealing with courses and enrolments the only possible.
+        // place where Panopto block can be used is the course.
+        return array('course-view' => true);
     }
 
 }
