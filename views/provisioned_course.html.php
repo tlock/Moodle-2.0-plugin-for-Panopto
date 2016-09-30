@@ -41,7 +41,7 @@
                 $publisherinfo = array();
                 foreach ($publishers as $publisher) {
                     array_push($publisherinfo,
-                        '$publisher->UserKey ($publisher->FirstName $publisher->LastName &lt;$publisher->Email&gt;)');
+                        "$publisher->UserKey ($publisher->FirstName $publisher->LastName &lt;$publisher->Email&gt;)");
                 }
 
                 echo join('<br />', $publisherinfo);
@@ -64,7 +64,7 @@
                 $instructorinfo = array();
                 foreach ($instructors as $instructor) {
                     array_push($instructorinfo,
-                        '$instructor->UserKey ($instructor->FirstName $instructor->LastName &lt;$instructor->Email&gt;)');
+                        "$instructor->UserKey ($instructor->FirstName $instructor->LastName &lt;$instructor->Email&gt;)");
                 }
 
                 echo join('<br />', $instructorinfo);

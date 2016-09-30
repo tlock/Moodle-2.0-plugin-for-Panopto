@@ -63,19 +63,6 @@ class block_panopto extends block_base {
     }
 
     /**
-     * Save global block data in mdl_config_plugins table instead of global CFG variable.
-     *
-     * @param array $data the config data being saved.
-     */
-    public function config_save($data) {
-
-        foreach ($data as $name => $value) {
-            set_config($name, trim($value), $this->blockname);
-        }
-        return true;
-    }
-
-    /**
      * Block has per-instance config (display edit icon in block header).
      */
     public function instance_allow_config() {
@@ -89,20 +76,17 @@ class block_panopto extends block_base {
      * @param bool $nolongerused depcrecated variable
      */
     public function instance_config_save($data, $nolongerused = false) {
-        global $COURSE;
+
         if (!empty($data->course)) {
-            panopto_data::set_panopto_course_id($COURSE->id, $data->course);
-
-            // If role mapping info is given, map roles.
-            if (!empty($data->creator) || !empty($data->publisher)) {
-                panopto_data::set_course_role_permissions($COURSE->id, $data->publisher, $data->creator);
-
-                // Get course context.
-                $context = context_course::instance($COURSE->id);
-            }
-        } else {
-            // If server is not set globally, there will be no other form values to push into config.
-            return true;
+            panopto_data::set_panopto_course_id($this->page->course->id, $data->course);
+            // Add roles mapping.
+            $publisherroles = (isset($data->publisher)) ? $data->publisher : array();
+            $creatorroles = (isset($data->creator)) ? $data->creator : array();
+            self::set_course_role_permissions(
+                $this->page->course->id,
+                $publisherroles,
+                $creatorroles
+            );
         }
     }
 
@@ -211,13 +195,13 @@ class block_panopto extends block_base {
     }
 
     /**
-     * Return applicable formats
+     * Which page types this block may appear on
+     * @return array
      */
     public function applicable_formats() {
-        return array(
-            'my' => false,
-            'all' => true
-        );
+        // Since block is dealing with courses and enrolments the only possible.
+        // place where Panopto block can be used is the course.
+        return array('course-view' => true);
     }
 
 }

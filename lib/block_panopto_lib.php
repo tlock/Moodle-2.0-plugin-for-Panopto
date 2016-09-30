@@ -29,8 +29,7 @@
  * @param int $moodlecourseid the id the the moodle course being edited
  */
 function panopto_decorate_course_id($moodlecourseid) {
-    global $CFG;
-    return ($CFG->block_panopto_instance_name . ':' . $moodlecourseid);
+    return (get_config('block_panopto', 'instance_name') . ':' . $moodlecourseid);
 }
 
 /**
@@ -39,8 +38,7 @@ function panopto_decorate_course_id($moodlecourseid) {
  * @param int $moodleusername the name the the moodle user being edited
  */
 function panopto_decorate_username($moodleusername) {
-    global $CFG;
-    return ($CFG->block_panopto_instance_name . '\\' . $moodleusername);
+    return (get_config('block_panopto', 'instance_name') . '\\' . $moodleusername);
 }
 
 /**
@@ -49,12 +47,10 @@ function panopto_decorate_username($moodleusername) {
  * @param string $payload auth string being passed to be validated
  */
 function panopto_generate_auth_code($payload) {
-    global $CFG;
     $index = 1;
     for ($x = 0; $x < 10; $x++) {
-        $cfgservername = 'block_panopto_server_name' . ($x + 1);
-        if (isset($CFG->$cfgservername)) {
-            $thisservername = $CFG->$cfgservername;
+        $thisservername = get_config('block_panopto', 'server_name' . ($x + 1));
+        if (empty($thisservername)) {
             if (strpos($payload, $thisservername)) {
                 $index = $x + 1;
                 break;
@@ -62,8 +58,7 @@ function panopto_generate_auth_code($payload) {
         }
     }
 
-    $appstring = 'block_panopto_application_key' . $index;
-    $sharedsecret = $CFG->$appstring;
+    $sharedsecret = get_config('block_panopto', 'application_key' . $index);
 
     $signedpayload = $payload . '|' . $sharedsecret;
 

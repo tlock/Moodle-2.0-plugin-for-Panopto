@@ -32,7 +32,7 @@ if ($ADMIN->fulltree) {
 
     $settings->add(
         new admin_setting_configselect(
-            'block_panopto_server_number',
+            'block_panopto/server_number',
             get_string('block_panopto_server_number_name', 'block_panopto'),
             get_string('block_panopto_server_number_desc', 'block_panopto'),
             $default,
@@ -41,7 +41,7 @@ if ($ADMIN->fulltree) {
     );
     $settings->add(
         new admin_setting_configtext(
-            'block_panopto_instance_name',
+            'block_panopto/instance_name',
             get_string('block_global_instance_name', 'block_panopto'),
             get_string('block_global_instance_desc', 'block_panopto'),
             'moodle',
@@ -52,7 +52,7 @@ if ($ADMIN->fulltree) {
     for ($x = 0; $x <= $numservers; $x++) {
         $settings->add(
             new admin_setting_configtext(
-                'block_panopto_server_name' . ($x + 1),
+                'block_panopto/server_name' . ($x + 1),
                 get_string('block_global_hostname', 'block_panopto') . ' ' . ($x + 1),
                 get_string('block_global_hostname_desc', 'block_panopto'),
                 '',
@@ -61,7 +61,7 @@ if ($ADMIN->fulltree) {
         );
         $settings->add(
             new admin_setting_configtext(
-                'block_panopto_application_key' . ($x + 1),
+                'block_panopto/application_key' . ($x + 1),
                 get_string('block_global_application_key', 'block_panopto') . ' ' . ($x + 1),
                 get_string('block_global_application_key_desc', 'block_panopto'),
                 '',
@@ -71,7 +71,7 @@ if ($ADMIN->fulltree) {
     }
     $settings->add(
         new admin_setting_configcheckbox(
-            'block_panopto_async_tasks',
+            'block_panopto/async_tasks',
             get_string('block_panopto_async_tasks', 'block_panopto'),
             get_string('block_panopto_async_tasks_desc', 'block_panopto'),
             0
@@ -79,7 +79,7 @@ if ($ADMIN->fulltree) {
     );
     $settings->add(
         new admin_setting_configcheckbox(
-            'block_panopto_auto_provision_new_courses',
+            'block_panopto/auto_provision_new_courses',
             get_string('block_panopto_auto_provision', 'block_panopto'),
             get_string('block_panopto_auto_provision_desc', 'block_panopto'),
             0

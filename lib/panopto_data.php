@@ -109,10 +109,9 @@ class panopto_data {
      * @param int $moodlecourseid course id class is being provisioned for
      */
     public function __construct($moodlecourseid) {
-        global $CFG;
 
         // Fetch global settings from DB.
-        $this->instancename = $CFG->block_panopto_instance_name;
+        $this->instancename = get_config('block_panopto', 'instance_name');
 
         // Get servername and application key specific to moodle course if ID is specified.
         if (isset($moodlecourseid)) {
@@ -440,21 +439,23 @@ class panopto_data {
     public static function get_course_role_mappings($moodlecourseid) {
         global $DB;
 
-        // Get publisher roles as string and explode to array.
-        $pubrolesraw = $DB->get_field(
-            'block_panopto_foldermap',
-            'publisher_mapping',
-            array('moodleid' => $moodlecourseid)
-        );
-        $pubroles = explode(',', $pubrolesraw);
+        $pubroles = array();
+        $creatorroles = array();
 
-        // Get creator roles as string, then explode to array.
-        $createrolesraw = $DB->get_field(
+         // Get publisher roles as string and explode to array.
+        $rolesraw = $DB->get_record(
             'block_panopto_foldermap',
-            'creator_mapping',
-            array('moodleid' => $moodlecourseid)
+            array('moodleid' => $moodle_course_id),
+            'publisher_mapping, creator_mapping'
         );
-        $creatorroles = explode(',', $createrolesraw);
+
+        if ($rolesraw && !empty($rolesraw->publisher_mapping)) {
+            $pubroles = explode("," , $rolesraw->publisher_mapping);
+        }
+
+        if ($rolesraw && !empty($rolesraw->creator_mapping)) {
+            $creatorroles = explode(",", $rolesraw->creator_mapping);
+        }
 
         return array('publisher' => $pubroles, 'creator' => $creatorroles);
     }
