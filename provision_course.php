@@ -38,14 +38,14 @@ if (isset($_SESSION['numservers'])) {
 }
 for ($x = 0; $x < $maxval; $x++) {
 
-    // Generate strings corresponding to potential servernames in $CFG.
-    $thisservername = 'block_panopto_server_name' . ($x + 1);
-    $thisappkey = 'block_panopto_application_key' . ($x + 1);
+    // Generate strings corresponding to potential servernames in the config.
+    $thisservername = get_config('block_panopto', 'server_name' . ($x + 1));
+    $thisappkey = get_config('block_panopto', 'application_key' . ($x + 1));
 
-    $hasservername = isset($CFG->$thisservername) && !is_null_or_empty_string($CFG->$thisservername);
-    if ($hasservername && (!is_null_or_empty_string($CFG->$thisappkey))) {
-        $aserverarray[$x] = $CFG->$thisservername;
-        $appkeyarray[$x] = $CFG->$thisappkey;
+    $hasservername = !is_null_or_empty_string($thisservername);
+    if ($hasservername && !is_null_or_empty_string($thisappkey)) {
+        $aserverarray[$x] = $thisservername;
+        $appkeyarray[$x] = $thisappkey;
     }
 }
 
@@ -145,6 +145,8 @@ if ($mform->is_cancelled()) {
             $courses = $data->courses;
             $selectedserver = $aserverarray[$data->servers];
             $selectedkey = $appkeyarray[$data->servers];
+
+            // Are these old? Need input on if we shoud store these in another way.
             $CFG->servername = $selectedserver;
             $CFG->appkey = $selectedkey;
         }

@@ -109,10 +109,9 @@ class panopto_data {
      * @param int $moodlecourseid course id class is being provisioned for
      */
     public function __construct($moodlecourseid) {
-        global $CFG;
 
         // Fetch global settings from DB.
-        $this->instancename = $CFG->block_panopto_instance_name;
+        $this->instancename = get_config('block_panopto', 'instance_name');
 
         // Get servername and application key specific to moodle course if ID is specified.
         if (isset($moodlecourseid)) {

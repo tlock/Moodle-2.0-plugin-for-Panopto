@@ -63,19 +63,6 @@ class block_panopto extends block_base {
     }
 
     /**
-     * Save global block data in mdl_config_plugins table instead of global CFG variable.
-     *
-     * @param array $data the config data being saved.
-     */
-    public function config_save($data) {
-
-        foreach ($data as $name => $value) {
-            set_config($name, trim($value), $this->blockname);
-        }
-        return true;
-    }
-
-    /**
      * Block has per-instance config (display edit icon in block header).
      */
     public function instance_allow_config() {

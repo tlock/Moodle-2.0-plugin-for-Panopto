@@ -63,7 +63,7 @@ class block_panopto_rollingsync {
             'eventtype' => 'enroll_add'
         ));
 
-        if ($CFG->block_panopto_async_tasks) {
+        if (get_config('block_panopto', 'async_tasks')) {
             \core\task\manager::queue_adhoc_task($task);
         } else {
             $task->execute();
@@ -91,7 +91,7 @@ class block_panopto_rollingsync {
             'eventtype' => 'enroll_remove'
         ));
 
-        if ($CFG->block_panopto_async_tasks) {
+        if (get_config('block_panopto', 'async_tasks')) {
             \core\task\manager::queue_adhoc_task($task);
         } else {
             $task->execute();
@@ -119,7 +119,7 @@ class block_panopto_rollingsync {
             'eventtype' => 'role'
         ));
 
-        if ($CFG->block_panopto_async_tasks) {
+        if (get_config('block_panopto', 'async_tasks')) {
             \core\task\manager::queue_adhoc_task($task);
         } else {
             $task->execute();
@@ -149,7 +149,7 @@ class block_panopto_rollingsync {
             'eventtype' => 'role'
         ));
 
-        if ($CFG->block_panopto_async_tasks) {
+        if (get_config('block_panopto', 'async_tasks')) {
             \core\task\manager::queue_adhoc_task($task);
         } else {
             $task->execute();
@@ -163,17 +163,21 @@ class block_panopto_rollingsync {
      * @param \core\event\course_created $event
      */
     public static function coursecreated(\core\event\course_created $event) {
-        global $CFG;
+        $allowautoprovision = get_config('block_panopto', 'auto_provision_new_courses');
 
-        if ($CFG->block_panopto_auto_provision_new_courses) {
+
+        if ($allowautoprovision) {
+            $selectedserver = get_config('block_panopto', 'server_name1');
+            $selectedkey = get_config('block_panopto', 'application_key1');
+
             $task = new \block_panopto\task\provision_course();
             $task->set_custom_data(array(
                 'courseid' => $event->courseid,
                 'relateduserid' => $event->relateduserid,
                 'contextid' => $event->contextid,
                 'eventtype' => 'role',
-                'servername' => $CFG->block_panopto_server_name1,
-                'appkey' => $CFG->block_panopto_application_key1
+                'servername' => $selectedserver,
+                'appkey' => $selectedkey
             ));
             $task->execute();
         }
