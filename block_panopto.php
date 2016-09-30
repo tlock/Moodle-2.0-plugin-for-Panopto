@@ -75,21 +75,14 @@ class block_panopto extends block_base {
      * @param array $data the data being set on panopto
      * @param bool $nolongerused depcrecated variable
      */
-    public function instance_config_save($data, $nolongerused = false) {
-        global $COURSE;
+    function instance_config_save($data, $nolongerused = false) {
+
         if (!empty($data->course)) {
-            panopto_data::set_panopto_course_id($COURSE->id, $data->course);
-
-            // If role mapping info is given, map roles.
-            if (!empty($data->creator) || !empty($data->publisher)) {
-                panopto_data::set_course_role_permissions($COURSE->id, $data->publisher, $data->creator);
-
-                // Get course context.
-                $context = context_course::instance($COURSE->id);
-            }
-        } else {
-            // If server is not set globally, there will be no other form values to push into config.
-            return true;
+            panopto_data::set_panopto_course_id($this->page->course->id, $data->course);
+            // Add roles mapping.
+            $publisher_roles = (isset($data->publisher)) ? $data->publisher : array();
+            $creator_roles = (isset($data->creator)) ? $data->creator : array();
+            block_panopto::set_course_role_permissions($this->page->course->id, $publisher_roles, $creator_roles);
         }
     }
 
