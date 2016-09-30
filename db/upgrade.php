@@ -121,7 +121,7 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
             set_config('instance_name', $CFG->block_panopto_instance_name, 'block_panopto');
             unset_config('block_panopto_instance_name');
         }
-        // Move block_panopto_async_tasks
+        // Move block_panopto_async_tasks.
         if (isset($CFG->block_panopto_async_tasks)) {
             set_config('async_tasks', $CFG->block_panopto_async_tasks, 'block_panopto');
             unset_config('block_panopto_async_tasks');

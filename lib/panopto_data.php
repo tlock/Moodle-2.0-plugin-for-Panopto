@@ -442,7 +442,7 @@ class panopto_data {
         $pubroles = array();
         $creatorroles = array();
 
-         // Get publisher roles as string and explode to array
+         // Get publisher roles as string and explode to array.
         $rolesraw = $DB->get_record(
             'block_panopto_foldermap',
             array('moodleid' => $moodle_course_id),

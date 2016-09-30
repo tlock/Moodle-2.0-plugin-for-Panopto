@@ -75,14 +75,18 @@ class block_panopto extends block_base {
      * @param array $data the data being set on panopto
      * @param bool $nolongerused depcrecated variable
      */
-    function instance_config_save($data, $nolongerused = false) {
+    public function instance_config_save($data, $nolongerused = false) {
 
         if (!empty($data->course)) {
             panopto_data::set_panopto_course_id($this->page->course->id, $data->course);
             // Add roles mapping.
-            $publisher_roles = (isset($data->publisher)) ? $data->publisher : array();
-            $creator_roles = (isset($data->creator)) ? $data->creator : array();
-            block_panopto::set_course_role_permissions($this->page->course->id, $publisher_roles, $creator_roles);
+            $publisherroles = (isset($data->publisher)) ? $data->publisher : array();
+            $creatorroles = (isset($data->creator)) ? $data->creator : array();
+            self::set_course_role_permissions(
+                $this->page->course->id,
+                $publisherroles,
+                $creatorroles
+            );
         }
     }
 
@@ -194,7 +198,7 @@ class block_panopto extends block_base {
      * Which page types this block may appear on
      * @return array
      */
-    function applicable_formats() {
+    public function applicable_formats() {
         // Since block is dealing with courses and enrolments the only possible.
         // place where Panopto block can be used is the course.
         return array('course-view' => true);

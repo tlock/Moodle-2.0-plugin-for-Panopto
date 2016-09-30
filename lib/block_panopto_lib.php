@@ -58,7 +58,7 @@ function panopto_generate_auth_code($payload) {
         }
     }
 
-    $sharedSecret = get_config('block_panopto', 'application_key' . $index);
+    $sharedsecret = get_config('block_panopto', 'application_key' . $index);
 
     $signedpayload = $payload . '|' . $sharedsecret;
 

@@ -58,7 +58,7 @@ class panopto_soap_client extends soap_client_with_timeout {
         parent::__construct(
             null,
             array(
-                'location' => 'http://$servername/Panopto/Services/ClientData.svc',
+                'location' => "http://$servername/Panopto/Services/ClientData.svc",
                 'uri' => 'http://services.panopto.com',
                 'timeout' => 300000
             )
@@ -254,13 +254,12 @@ class panopto_soap_client extends soap_client_with_timeout {
             $soapvars = $mergedvars;
         }
         // Store action for use in overridden __doRequest.
-        $this->currentaction = 'http://services.panopto.com/IClientDataService/$methodname';
+        $this->currentaction = "http://services.panopto.com/IClientDataService/$methodname";
+
         // Make the SOAP call via SoapClient::__soapCall.
         try{
             return parent::__soapCall($methodname, $soapvars);
-        }
-        catch (Exception $e) {
-            echo "<div style='color:red;'> Error:" . $e->getMessage()."</div>";
+        } catch (Exception $e) {
             error_log("Error:" . $e->getMessage());
             error_log("File: " . $e->getFile());
             error_log("Line: " . $e->getLine());
@@ -308,7 +307,7 @@ class panopto_soap_client extends soap_client_with_timeout {
      */
     private function get_xml_data_element($name, $value) {
         $valueescaped = htmlspecialchars($value);
-        return '<ns1:$name>$valueescaped</ns1:$name>';
+        return "<ns1:$name>$valueescaped</ns1:$name>";
     }
 
     /**

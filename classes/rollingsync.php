@@ -156,7 +156,6 @@ class block_panopto_rollingsync {
         }
     }
 
-
     /**
      * Called when a course has been created.
      *
