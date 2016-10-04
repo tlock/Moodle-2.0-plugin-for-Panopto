@@ -25,7 +25,7 @@ defined('MOODLE_INTERNAL') || die;
 require('version.php');
 global $CFG;
 global $numservers;
-$numservers = isset($CFG->block_panopto_server_number) ? $CFG->block_panopto_server_number : 1;
+$numservers = isset($CFG->block_panopto_server_number) ? $CFG->block_panopto_server_number : 0;
 $default = 0;
 if ($ADMIN->fulltree) {
     $_SESSION['numservers'] = $numservers + 1;
