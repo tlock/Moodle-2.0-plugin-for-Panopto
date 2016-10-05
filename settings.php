@@ -74,7 +74,7 @@ if ($ADMIN->fulltree) {
             'block_panopto/async_tasks',
             get_string('block_panopto_async_tasks', 'block_panopto'),
             get_string('block_panopto_async_tasks_desc', 'block_panopto'),
-            0
+            1
         )
     );
     $settings->add(
@@ -82,7 +82,7 @@ if ($ADMIN->fulltree) {
             'block_panopto/auto_provision_new_courses',
             get_string('block_panopto_auto_provision', 'block_panopto'),
             get_string('block_panopto_auto_provision_desc', 'block_panopto'),
-            0
+            1
         )
     );
 
