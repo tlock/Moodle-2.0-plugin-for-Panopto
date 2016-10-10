@@ -385,7 +385,7 @@ class panopto_soap_client extends soap_client_with_timeout {
         } else {
             $soapstruct .= '<ns1:Instructors />';
         }
-        $soapstruct .= $this->get_xml_data_element('LongName', $provisioninginfo->LongName);
+        $soapstruct .= $this->get_xml_data_element('LongName', $provisioninginfo->longname);
         if (!empty($provisioninginfo->Publishers)) {
             $soapstruct .= '<ns1:Publishers>';
             foreach ($provisioninginfo->Publishers as $publisher) {
