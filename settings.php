@@ -25,7 +25,12 @@ defined('MOODLE_INTERNAL') || die;
 require('version.php');
 global $CFG;
 global $numservers;
-$numservers = isset($CFG->block_panopto_server_number) ? $CFG->block_panopto_server_number : 0;
+
+$numservers = get_config('block_panopto', 'server_number');
+$numservers = isset($numservers) ? $numservers : 0;
+
+$currversion = (isset($plugin) && isset($plugin->version))  ? $plugin->version : 0000000000;
+
 $default = 0;
 if ($ADMIN->fulltree) {
     $_SESSION['numservers'] = $numservers + 1;
@@ -86,7 +91,7 @@ if ($ADMIN->fulltree) {
         )
     );
 
-    $versionnumber = '<b>' . $internalversion . '</b><br/>';
+    $versionnumber = '<b>' . $currversion . '</b><br/>';
     $settings->add(new admin_setting_heading('block_panopto_display_version', '',
         'Current version of the panopto block: ' . $versionnumber));
 
