@@ -50,7 +50,7 @@ function panopto_generate_auth_code($payload) {
     $index = 1;
     for ($x = 0; $x < 10; $x++) {
         $thisservername = get_config('block_panopto', 'server_name' . ($x + 1));
-        if (empty($thisservername)) {
+        if (isset($thisservername) && !empty($thisservername)) {
             if (strpos($payload, $thisservername)) {
                 $index = $x + 1;
                 break;
