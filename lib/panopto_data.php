@@ -245,6 +245,10 @@ class panopto_data {
             array('id' => $this->moodlecourseid)
         );
 
+        if (!isset($provisioninginfo->shortname) || empty($provisioninginfo->shortname)) {
+            $provisioninginfo->shortname = substr($provisioninginfo->longname, 0, 5);
+        }
+
         $provisioninginfo->ExternalCourseID = $this->instancename . ':' . $this->moodlecourseid;
         $provisioninginfo->Server = $this->servername;
         $coursecontext = context_course::instance($this->moodlecourseid, MUST_EXIST);
