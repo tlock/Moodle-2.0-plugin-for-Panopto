@@ -66,6 +66,10 @@ class update_user extends \core\task\adhoc_task {
                 $panopto->change_user_role($enrollmentinfo['role'], $enrollmentinfo['userkey']);
                 break;
         }
+
+        // Need to reprovision the course for enrollment/role changes to take effect on panopto's side.
+        $provisioninginfo = $panopto->get_provisioning_info();
+        $provisioneddata = $panopto->provision_course($provisioninginfo);
     }
 
     /**
