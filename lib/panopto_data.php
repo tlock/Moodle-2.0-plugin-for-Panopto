@@ -141,6 +141,20 @@ class panopto_data {
     }
 
     /**
+     * Returns if the logged in user can provision.
+     */
+    public function can_user_provision($courseid) {
+        global $USER;
+
+        // Get the context of the course so we can get capaibilities.
+        $context = context_course::instance($courseid, MUST_EXIST);
+
+        return has_capability('block/panopto:provision_aspublisher', $context, $USER->id) ||
+            has_capability('block/panopto:provision_asteacher', $context, $USER->id) ||
+            has_capability('moodle/course:update', $context, $USER->id);
+    }
+
+    /**
      * Gets the toal count of users from all roles given a provisioning info object.
      *
      * @param object $provisioninginfo user info for course being counted
