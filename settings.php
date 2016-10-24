@@ -90,6 +90,14 @@ if ($ADMIN->fulltree) {
             1
         )
     );
+    $settings->add(
+        new admin_setting_configcheckbox(
+            'block_panopto/allow_non_editing_teacher_provision',
+            get_string('block_panopto_non_editing_teacher_provision', 'block_panopto'),
+            get_string('block_panopto_non_editing_teacher_provision_desc', 'block_panopto'),
+            1
+        )
+    );
 
     $versionnumber = '<b>' . $currversion . '</b><br/>';
     $settings->add(new admin_setting_heading('block_panopto_display_version', '',

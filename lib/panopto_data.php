@@ -98,10 +98,10 @@ class panopto_data {
     public static $publisherdefaultrolemapping = array('1');
 
     /**
-     * @var int $creatordefaultrolemapping By default, the Moodle roles "Teacher" and "Non-Editing
-     * Teacher" will map to creator in Panopto. Their Moodle IDs are '3' and '4' respectively.
+     * @var int $creatordefaultrolemapping By default, the Moodle role "Teacher" will map to creator in Panopto.
+     *It's Moodle IDs is '3'.
      */
-    public static $creatordefaultrolemapping = array('3', '4');
+    public static $creatordefaultrolemapping = array('3');
 
     /**
      * main constructor
@@ -217,11 +217,18 @@ class panopto_data {
 
         if (empty($mappings['creator'][0]) && empty($mappings['publisher'][0])) {
 
+            $creatormapping = $creatordefaultrolemapping;
+
+            // If the config is set to allow non-editing teachers to provision by default we add thier role id to the array.
+            if (get_config('block_panopto', 'allow_non_editing_teacher_provision')) {
+                $creatormapping[] = '4';
+            }
+
             // Set the role mappings for the course to the defaults.
             self::set_course_role_mappings(
                 $this->moodlecourseid,
                 self::$publisherdefaultrolemapping,
-                self::$creatordefaultrolemapping
+                self::$creatormapping
             );
 
             // Grant course users the proper panopto permissions based on the default role mappings.
@@ -229,7 +236,7 @@ class panopto_data {
             self::set_course_role_permissions(
                 $this->moodlecourseid,
                 self::$publisherdefaultrolemapping,
-                self::$creatordefaultrolemapping
+                self::$creatormapping
             );
         }
 
