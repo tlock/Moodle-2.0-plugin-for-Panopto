@@ -229,4 +229,38 @@ class block_panopto_rollingsync {
             $task->execute();
         }
     }
+
+    /**
+     * Called when a course has been restored (imported/backed up).
+     *
+     * @param \core\event\course_created $event
+     */
+    public static function courserestored(\core\event\course_restored $event) {
+        global $DB;
+
+        if ($event->other['samesite'] && isset($event->other['originalcourseid'])) {
+            $newcourseid = intval($event->courseid);
+            $originalcourseid = intval($event->other['originalcourseid']);
+            $panoptodata = new panopto_data($newcourseid);
+
+            $currentimportsources = $panoptodata->get_import_list($newcourseid);
+
+            $possibleimportsources = array_merge(
+                array($originalcourseid),
+                $panoptodata->get_import_list($originalcourseid)
+            );
+
+            foreach ($possibleimportsources as $possiblenewimportsource) {
+                // If a course is already listed as an import we don't need to reprovision it.
+                if (!in_array($possiblenewimportsource, $currentimportsources)) {
+                    $currentimportsources[] = $possiblenewimportsource;
+
+                    panopto_data::add_new_course_import($newcourseid, $possiblenewimportsource);
+
+                    $newimportpanopto = new panopto_data($possiblenewimportsource);
+                    $newimportpanopto->provision_course($newimportpanopto->get_provisioning_info());
+                }
+            }
+        }
+    }
 }

@@ -223,7 +223,6 @@ class panopto_data {
      *  Fetch course name and membership info from DB in preparation for provisioning operation.
      */
     public function get_provisioning_info() {
-
         global $DB;
 
         // If old role mappings exists, do not remap. Otherwise, set role mappings to defaults.
@@ -342,7 +341,102 @@ class panopto_data {
             }
         }
 
+        // We need to go through each course importing this course, and add thier users to our couse on Panopto's side.
+        $childcourses = $this->get_import_target_list($this->moodlecourseid);
+        foreach ($childcourses as $childcourseid) {
+            $childcoursecontext = context_course::instance($childcourseid);
+            $currentusers = get_enrolled_users($childcoursecontext);
+
+            if (!empty($currentusers)) {
+
+                if (!isset($provisioninginfo->Students)) {
+                    $provisioninginfo->Students = array();
+                }
+
+                foreach ($currentusers as $user) {
+                    $userinfo = new stdClass;
+                    $userinfo->UserKey = $this->panopto_decorate_username($user->username);
+                    $userinfo->FirstName = $user->firstname;
+                    $userinfo->LastName = $user->lastname;
+                    $userinfo->Email = $user->email;
+
+                    if (!in_array($userinfo, $provisioninginfo->Students)) {
+                        array_push($provisioninginfo->Students, $userinfo);
+                    }
+                }
+            }
+        }
+
         return $provisioninginfo;
+    }
+
+    /**
+     * Create the provisioning information needed to create permissions on panopto for the new course
+     *
+     * @param int $courseid the id of the course being updated
+     * @param int $newimport courseid that the target course imports from
+     */
+    public static function add_new_course_import($courseid, $newimportid) {
+        global $DB;
+
+        $rowarray = array('target_moodle_id' => $courseid, 'import_moodle_id' => $newimportid);
+        if ($DB->get_records('block_panopto_importmap', $rowarray)) {
+            return;
+        } else {
+            $row = (object) $rowarray;
+            return $DB->insert_record('block_panopto_importmap', $row);
+        }
+    }
+
+    /**
+     * Get the courseid's of the courses being imported to this course
+     *
+     * @param int $courseid
+     */
+    public function get_import_list($courseid) {
+        global $DB;
+
+        $courseimports = $DB->get_records(
+            'block_panopto_importmap',
+            array('target_moodle_id' => $courseid),
+            null,
+            'import_moodle_id'
+        );
+
+
+        $retarray = array();
+        if (isset($courseimports) && !empty($courseimports)) {
+            foreach ($courseimports as $courseimport) {
+                $retarray[] = $courseimport->import_moodle_id;
+            }
+        }
+
+        return $retarray;
+    }
+
+    /**
+     * Get the courseid's of the courses importing the given course
+     *
+     * @param int $courseid
+     */
+    public function get_import_target_list($courseid) {
+        global $DB;
+
+        $courseimports = $DB->get_records(
+            'block_panopto_importmap',
+            array('import_moodle_id' => $courseid),
+            null,
+            'target_moodle_id'
+        );
+
+        $retarray = array();
+        if (isset($courseimports) && !empty($courseimports)) {
+            foreach ($courseimports as $courseimport) {
+                $retarray[] = $courseimport->target_moodle_id;
+            }
+        }
+
+        return $retarray;
     }
 
     /**

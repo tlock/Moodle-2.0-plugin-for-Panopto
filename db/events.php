@@ -53,5 +53,10 @@ $observers = array(
     array(
         'eventname' => '\core\event\course_created',
         'callback' => 'block_panopto_rollingsync::coursecreated',
+    ),
+    // Event when a course is imported or backed up.
+    array(
+        'eventname' => '\core\event\course_restored',
+        'callback' => 'block_panopto_rollingsync::courserestored',
     )
 );
