@@ -238,7 +238,8 @@ class block_panopto_rollingsync {
     public static function courserestored(\core\event\course_restored $event) {
         global $DB;
 
-        if ($event->other['samesite'] && isset($event->other['originalcourseid'])) {
+        $originalcourseenabled = $event->other['samesite'] && isset($event->other['originalcourseid']);
+        if (get_config('block_panopto', 'auto_sync_imports') && $originalcourseenabled) {
             $newcourseid = intval($event->courseid);
             $originalcourseid = intval($event->other['originalcourseid']);
             $panoptodata = new panopto_data($newcourseid);

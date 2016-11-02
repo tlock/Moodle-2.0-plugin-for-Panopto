@@ -98,6 +98,14 @@ if ($ADMIN->fulltree) {
             1
         )
     );
+    $settings->add(
+        new admin_setting_configcheckbox(
+            'block_panopto/auto_sync_imports',
+            get_string('block_panopto_auto_sync_imports', 'block_panopto'),
+            get_string('block_panopto_auto_sync_imports_desc', 'block_panopto'),
+            1
+        )
+    );
 
     $versionnumber = '<b>' . $currversion . '</b><br/>';
     $settings->add(new admin_setting_heading('block_panopto_display_version', '',
