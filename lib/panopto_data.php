@@ -92,18 +92,6 @@ class panopto_data {
     const PAGE_SIZE = 50;
 
     /**
-     * @var int $publisherdefaultrolemapping By default, the Moodle role "Manager" will map to publisher in Panopto.
-     * It's Moodle ID is '1'.
-     */
-    public static $publisherdefaultrolemapping = array('1');
-
-    /**
-     * @var int $creatordefaultrolemapping By default, the Moodle role "Teacher" will map to creator in Panopto.
-     *It's Moodle IDs is '3'.
-     */
-    public static $creatordefaultrolemapping = array('3');
-
-    /**
      * main constructor
      *
      * @param int $moodlecourseid course id class is being provisioned for
@@ -227,29 +215,25 @@ class panopto_data {
 
         // If old role mappings exists, do not remap. Otherwise, set role mappings to defaults.
         $mappings = self::get_course_role_mappings($this->moodlecourseid);
-
         if (empty($mappings['creator'][0]) && empty($mappings['publisher'][0])) {
 
-            $creatormapping = self::$creatordefaultrolemapping;
-
-            // If the config is set to allow non-editing teachers to provision by default we add thier role id to the array.
-            if (get_config('block_panopto', 'allow_non_editing_teacher_provision')) {
-                $creatormapping[] = '4';
-            }
+            // These settings are returned as a comma seperated string of role Id's
+            $defaultpublishermapping = explode("," , get_config('block_panopto', 'publisher_role_mapping'));
+            $defaultcreatormapping = explode("," , get_config('block_panopto', 'creator_role_mapping'));
 
             // Set the role mappings for the course to the defaults.
             self::set_course_role_mappings(
                 $this->moodlecourseid,
-                self::$publisherdefaultrolemapping,
-                $creatormapping
+                $defaultpublishermapping,
+                $defaultcreatormapping
             );
 
             // Grant course users the proper panopto permissions based on the default role mappings.
             // This will make the role mappings be recognized when provisioning.
             self::set_course_role_permissions(
                 $this->moodlecourseid,
-                self::$publisherdefaultrolemapping,
-                $creatormapping
+                $defaultpublishermapping,
+                $defaultcreatormapping
             );
         }
 
@@ -885,12 +869,24 @@ class panopto_data {
                     $overwrite = false
                 );
             }
-
         }
         foreach ($creatorroles as $role) {
             if (isset($role) && trim($role) !== '') {
                 assign_capability(
                     'block/panopto:provision_asteacher',
+                    CAP_ALLOW,
+                    $role,
+                    $coursecontext,
+                    $overwrite = false
+                );
+            }
+        }
+
+        $publishersystemroles = get_config('block_panopto', 'publisher_system_role_mapping');
+        foreach ($publishersystemroles as $role) {
+            if (isset($role) && trim($role) !== '') {
+                assign_capability(
+                    'block/panopto:provision_aspublisher',
                     CAP_ALLOW,
                     $role,
                     $coursecontext,

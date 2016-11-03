@@ -24,7 +24,6 @@
 defined('MOODLE_INTERNAL') || die;
 require('version.php');
 global $CFG;
-global $numservers;
 
 $numservers = get_config('block_panopto', 'server_number');
 $numservers = isset($numservers) ? $numservers : 0;
@@ -92,18 +91,46 @@ if ($ADMIN->fulltree) {
     );
     $settings->add(
         new admin_setting_configcheckbox(
-            'block_panopto/allow_non_editing_teacher_provision',
-            get_string('block_panopto_non_editing_teacher_provision', 'block_panopto'),
-            get_string('block_panopto_non_editing_teacher_provision_desc', 'block_panopto'),
-            1
-        )
-    );
-    $settings->add(
-        new admin_setting_configcheckbox(
             'block_panopto/auto_sync_imports',
             get_string('block_panopto_auto_sync_imports', 'block_panopto'),
             get_string('block_panopto_auto_sync_imports_desc', 'block_panopto'),
             1
+        )
+    );
+
+    $systemcontext = context_system::instance();
+    $systemrolearray = get_assignable_roles($systemcontext, ROLENAME_BOTH);
+
+    $settings->add(
+        new admin_setting_configmultiselect(
+            'block_panopto/publisher_system_role_mapping',
+            get_string('block_panopto_publisher_system_role_mapping', 'block_panopto'),
+            get_string('block_panopto_publisher_system_role_mapping_desc', 'block_panopto'),
+            null,
+            $systemrolearray
+        )
+    );
+
+    $coursecontext = context_course::instance(SITEID);
+    $courserolearray = get_assignable_roles($coursecontext, ROLENAME_BOTH);
+
+    $settings->add(
+        new admin_setting_configmultiselect(
+            'block_panopto/publisher_role_mapping',
+            get_string('block_panopto_publisher_mapping', 'block_panopto'),
+            get_string('block_panopto_publisher_mapping_desc', 'block_panopto'),
+            array(1),
+            $courserolearray
+        )
+    );
+
+    $settings->add(
+        new admin_setting_configmultiselect(
+            'block_panopto/creator_role_mapping',
+            get_string('block_panopto_creator_mapping', 'block_panopto'),
+            get_string('block_panopto_creator_mapping_desc', 'block_panopto'),
+            array(3, 4),
+            $courserolearray
         )
     );
 
