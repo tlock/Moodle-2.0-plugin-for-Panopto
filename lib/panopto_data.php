@@ -237,6 +237,8 @@ class panopto_data {
             );
         }
 
+        $provisioninginfo = new stdClass;
+
         $provisioninginfo->shortname = $DB->get_field(
             'course',
             'shortname',
