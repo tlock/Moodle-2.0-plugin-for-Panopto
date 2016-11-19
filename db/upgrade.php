@@ -143,7 +143,7 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
             $importkey = new xmldb_key('primary', XMLDB_KEY_PRIMARY, array('id'), null, null);
 
             foreach ($importfields as $importfield) {
-                // Conditionally launch add field import_moodle_id
+                // Conditionally launch add field import_moodle_id.
                 $table->addField($importfield);
             }
 

@@ -52,7 +52,7 @@ try {
     if (empty($panoptodata->servername) || empty($panoptodata->instancename) || empty($panoptodata->applicationkey)) {
         $content->text = get_string('unprovisioned', 'block_panopto');
 
-        if($panoptodata->can_user_provision($courseid)) {
+        if ($panoptodata->can_user_provision($courseid)) {
             $content->text .= '<br/><br/>' .
             "<a href='$CFG->wwwroot/blocks/panopto/provision_course_internal.php?id=$courseid'>" .
             get_string('provision_course_link_text', 'block_panopto') . '</a>';

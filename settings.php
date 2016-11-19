@@ -28,7 +28,7 @@ global $CFG;
 $numservers = get_config('block_panopto', 'server_number');
 $numservers = isset($numservers) ? $numservers : 0;
 
-$currversion = (isset($plugin) && isset($plugin->version))  ? $plugin->version : 0000000000;
+$currversion = (isset($plugin) && isset($plugin->version)) ? $plugin->version : 0000000000;
 
 $default = 0;
 if ($ADMIN->fulltree) {

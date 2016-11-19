@@ -121,7 +121,7 @@ class block_panopto_rollingsync {
 
         $task = new \block_panopto\task\update_user();
         $context = context_course::instance($event->courseid);
-        if(is_enrolled($context, $event->relateduserid, '', true)) {
+        if (is_enrolled($context, $event->relateduserid, '', true)) {
             // User is enrolled.  Make sure they are added in Panopto.
             $task->set_custom_data(array(
                 'courseid' => $event->courseid,
@@ -212,7 +212,6 @@ class block_panopto_rollingsync {
     public static function coursecreated(\core\event\course_created $event) {
         $allowautoprovision = get_config('block_panopto', 'auto_provision_new_courses');
 
-
         if ($allowautoprovision) {
             $selectedserver = get_config('block_panopto', 'server_name1');
             $selectedkey = get_config('block_panopto', 'application_key1');
@@ -233,7 +232,7 @@ class block_panopto_rollingsync {
     /**
      * Called when a course has been restored (imported/backed up).
      *
-     * @param \core\event\course_created $event
+     * @param \core\event\course_restored $event
      */
     public static function courserestored(\core\event\course_restored $event) {
         global $DB;

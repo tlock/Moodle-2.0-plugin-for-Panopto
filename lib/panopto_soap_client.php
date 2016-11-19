@@ -257,7 +257,7 @@ class panopto_soap_client extends soap_client_with_timeout {
         $this->currentaction = "http://services.panopto.com/IClientDataService/$methodname";
 
         // Make the SOAP call via SoapClient::__soapCall.
-        try{
+        try {
             return parent::__soapCall($methodname, $soapvars);
         } catch (Exception $e) {
             error_log("Error:" . $e->getMessage());

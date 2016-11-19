@@ -130,6 +130,8 @@ class panopto_data {
 
     /**
      * Returns if the logged in user can provision.
+     *
+     * @param int $courseid the moodle id of the course we are checking
      */
     public function can_user_provision($courseid) {
         global $USER;
@@ -338,6 +340,8 @@ class panopto_data {
 
     /**
      *  Fetch course name and membership info from DB in preparation for provisioning operation.
+     *
+     * @param bool $getsharedinfo a flag that tells us if we should find courses using the same panopto folder and add thier users.
      */
     public function get_provisioning_info($getsharedinfo = true) {
         global $DB;
@@ -346,7 +350,7 @@ class panopto_data {
         $mappings = self::get_course_role_mappings($this->moodlecourseid);
         if (empty($mappings['creator'][0]) && empty($mappings['publisher'][0])) {
 
-            // These settings are returned as a comma seperated string of role Id's
+            // These settings are returned as a comma seperated string of role Id's.
             $defaultpublishermapping = explode("," , get_config('block_panopto', 'publisher_role_mapping'));
             $defaultcreatormapping = explode("," , get_config('block_panopto', 'creator_role_mapping'));
 
@@ -483,7 +487,7 @@ class panopto_data {
      * Initializes and syncs a possible new import
      *
      * @param int $courseid the id of the recipient course
-     * @param int $newimport the id of the course being imported
+     * @param int $newimportid the id of the course being imported
      *
      */
     public function init_and_sync_import($courseid, $newimportid) {
@@ -510,7 +514,7 @@ class panopto_data {
      * Create the provisioning information needed to create permissions on panopto for the new course
      *
      * @param int $courseid the id of the course being updated
-     * @param int $newimport courseid that the target course imports from
+     * @param int $newimportid courseid that the target course imports from
      */
     public static function add_new_course_import($courseid, $newimportid) {
         global $DB;
@@ -659,7 +663,7 @@ class panopto_data {
     /**
      * We need to retrieve the current course mapping in the constructor, so this must be static.
      *
-     * @param int $moodlecourseid id of the current moodle course
+     * @param int $sessiongroupid id of the panopto folder we are trying to get the moodle courses associated with.
      */
     public static function get_moodle_course_id($sessiongroupid) {
         global $DB;
