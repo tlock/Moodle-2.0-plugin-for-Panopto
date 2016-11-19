@@ -70,7 +70,7 @@ try {
                 $courseinfo = $panoptodata->get_course();
 
                 // Panopto course was deleted, or an exception was thrown while retrieving course data.
-                if ($courseinfo->Access == 'Error') {
+                if (!isset($courseinfo) || $courseinfo->Access == 'Error') {
                     $content->text .= "<span class='error'>" . get_string('error_retrieving', 'block_panopto') . '</span>';
                 } else {
                     // SSO form passes instance name in POST to keep URLs portable.
