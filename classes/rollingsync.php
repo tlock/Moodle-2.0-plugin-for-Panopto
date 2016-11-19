@@ -242,26 +242,9 @@ class block_panopto_rollingsync {
         if (get_config('block_panopto', 'auto_sync_imports') && $originalcourseenabled) {
             $newcourseid = intval($event->courseid);
             $originalcourseid = intval($event->other['originalcourseid']);
+
             $panoptodata = new panopto_data($newcourseid);
-
-            $currentimportsources = $panoptodata->get_import_list($newcourseid);
-
-            $possibleimportsources = array_merge(
-                array($originalcourseid),
-                $panoptodata->get_import_list($originalcourseid)
-            );
-
-            foreach ($possibleimportsources as $possiblenewimportsource) {
-                // If a course is already listed as an import we don't need to reprovision it.
-                if (!in_array($possiblenewimportsource, $currentimportsources)) {
-                    $currentimportsources[] = $possiblenewimportsource;
-
-                    panopto_data::add_new_course_import($newcourseid, $possiblenewimportsource);
-
-                    $newimportpanopto = new panopto_data($possiblenewimportsource);
-                    $newimportpanopto->provision_course($newimportpanopto->get_provisioning_info());
-                }
-            }
+            $panoptodata->init_and_sync_import($newcourseid, $originalcourseid);
         }
     }
 }

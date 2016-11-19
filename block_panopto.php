@@ -78,15 +78,20 @@ class block_panopto extends block_base {
     public function instance_config_save($data, $nolongerused = false) {
 
         if (!empty($data->course)) {
+
             panopto_data::set_panopto_course_id($this->page->course->id, $data->course);
             // Add roles mapping.
             $publisherroles = (isset($data->publisher)) ? $data->publisher : array();
             $creatorroles = (isset($data->creator)) ? $data->creator : array();
-            self::set_course_role_permissions(
+
+            panopto_data::set_course_role_permissions(
                 $this->page->course->id,
                 $publisherroles,
                 $creatorroles
             );
+
+            $panoptodata = new panopto_data($this->page->course->id);
+            $panoptodata->provision_course($panoptodata->get_provisioning_info());
         }
     }
 

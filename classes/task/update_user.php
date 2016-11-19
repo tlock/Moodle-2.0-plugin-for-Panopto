@@ -74,9 +74,9 @@ class update_user extends \core\task\adhoc_task {
                 break;
         }
         // Need to reprovision the course and it's imports for enrollment/role changes to take effect on panopto's side.
-        $courseimports = $panopto->get_import_list($courseid);
-        foreach ($courseimports as $importedcourseid) {
-            $importedpanopto = new \panopto_data($importedcourseid);
+        $courseimports = \panopto_data::get_import_list($courseid);
+        foreach ($courseimports as $importedcourse) {
+            $importedpanopto = new \panopto_data($importedcourse);
 
             $importprovisioninginfo = $importedpanopto->get_provisioning_info();
             $importedpanopto->provision_course($importprovisioninginfo);

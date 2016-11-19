@@ -162,6 +162,135 @@ class panopto_data {
     }
 
     /**
+     * Tests to see if a user is already listed in the user array
+     *
+     * @param object $userinfo the user being tested
+     * @param array $userarray an array of current users
+     *
+     * @return bool whether or not the user is in the list of current users
+     */
+    private function is_user_in_array($userinfo, $userarray) {
+        foreach ($userarray as $currentuser) {
+            if ($userinfo->UserKey === $currentuser->UserKey) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Merges unique users from the right array into the left arry and returns the new array.
+     *
+     * @param array $leftarray an array of current users
+     * @param array $rightarray an array of users being checked and added
+     *
+     * @return array the array of merged users
+     */
+    private function merge_user_arrays($leftarray, $rightarray) {
+        $retarray = $leftarray;
+
+        foreach ($rightarray as $possibleinsert) {
+            $alreadyinarray = $this->is_user_in_array($possibleinsert, $leftarray);
+
+            if (!$alreadyinarray) {
+                array_push($retarray, $possibleinsert);
+            }
+        }
+
+        return $retarray;
+    }
+
+    /**
+     * Appends the provisioning info from all importing courses to thise course, for panopto permissions
+     *
+     * @param object $provisioninginfo the current provisioninginfo.
+     *
+     */
+    private function append_child_provisioning_info($provisioninginfo) {
+        $childcourses = self::get_import_target_list($this->moodlecourseid);
+        foreach ($childcourses as $childcourse) {
+            $childcoursecontext = context_course::instance($childcourse);
+            $currentusers = get_enrolled_users($childcoursecontext);
+
+            if (!empty($currentusers)) {
+
+                if (!isset($provisioninginfo->Students)) {
+                    $provisioninginfo->Students = array();
+                }
+
+                foreach ($currentusers as $user) {
+                    $userinfo = new stdClass;
+                    $userinfo->UserKey = $this->panopto_decorate_username($user->username);
+                    $userinfo->FirstName = $user->firstname;
+                    $userinfo->LastName = $user->lastname;
+                    $userinfo->Email = $user->email;
+
+                    if (!$this->is_user_in_array($userinfo, $provisioninginfo->Students)) {
+                        array_push($provisioninginfo->Students, $userinfo);
+                    }
+                }
+            }
+        }
+
+        return $provisioninginfo;
+    }
+
+    /**
+     * This will iterate through all courses with the same panopto ID and add those users to the provisioning info.
+     *
+     * @param object $provisioninginfo the current provisioninginfo.
+     *
+     */
+    private function append_shared_course_info($provisioninginfo) {
+        $panoptoid = self::get_panopto_course_id($this->moodlecourseid);
+        $sharedcourses = self::get_moodle_course_id($panoptoid);
+
+        foreach ($sharedcourses as $sharedcourse) {
+            if ($sharedcourse->moodleid !== $this->moodlecourseid) {
+                $sharedpanopto = new panopto_data($sharedcourse->moodleid);
+                $sharedprovisioninginfo = $sharedpanopto->get_provisioning_info(false);
+
+                if (isset($sharedprovisioninginfo->Publishers)) {
+                    if (isset($provisioninginfo->Publishers)) {
+                        $provisioninginfo->Publishers = $this->merge_user_arrays(
+                            $provisioninginfo->Publishers,
+                            $sharedprovisioninginfo->Publishers
+                        );
+                    } else {
+                        $provisioninginfo->Publishers = $sharedprovisioninginfo->Publishers;
+                    }
+                }
+
+                if (isset($sharedprovisioninginfo->Instructors)) {
+                    if (isset($provisioninginfo->Instructors)) {
+                        $provisioninginfo->Instructors = $this->merge_user_arrays(
+                            $provisioninginfo->Instructors,
+                            $sharedprovisioninginfo->Instructors
+                        );
+                    } else {
+                        $provisioninginfo->Instructors = $sharedprovisioninginfo->Instructors;
+                    }
+                }
+
+                if (isset($sharedprovisioninginfo->Students)) {
+                    if (isset($provisioninginfo->Students)) {
+                        $provisioninginfo->Students = $this->merge_user_arrays(
+                            $provisioninginfo->Students,
+                            $sharedprovisioninginfo->Students
+                        );
+                    } else {
+                        $provisioninginfo->Students = $sharedprovisioninginfo->Students;
+                    }
+
+                }
+            }
+        }
+
+        return $provisioninginfo;
+    }
+
+    /**
      * Create the Panopto course and populate its ACLs.
      *
      * @param object $provisioninginfo info for course being provisioned
@@ -210,7 +339,7 @@ class panopto_data {
     /**
      *  Fetch course name and membership info from DB in preparation for provisioning operation.
      */
-    public function get_provisioning_info() {
+    public function get_provisioning_info($getsharedinfo = true) {
         global $DB;
 
         // If old role mappings exists, do not remap. Otherwise, set role mappings to defaults.
@@ -239,23 +368,36 @@ class panopto_data {
 
         $provisioninginfo = new stdClass;
 
-        $provisioninginfo->shortname = $DB->get_field(
-            'course',
-            'shortname',
-            array('id' => $this->moodlecourseid)
-        );
-
-        $provisioninginfo->longname = $DB->get_field(
-            'course',
-            'fullname',
-            array('id' => $this->moodlecourseid)
-        );
-
-        if (!isset($provisioninginfo->shortname) || empty($provisioninginfo->shortname)) {
-            $provisioninginfo->shortname = substr($provisioninginfo->longname, 0, 5);
+        // If we are provisioning a course with a panopto_id set we should provision that folder.
+        $coursepanoptoid = self::get_panopto_course_id($this->moodlecourseid);
+        $hasvalidpanoptoid = isset($coursepanoptoid) && !empty($coursepanoptoid);
+        if ($hasvalidpanoptoid) {
+            $mappedpanoptocourse = $this->get_course();
         }
 
-        $provisioninginfo->ExternalCourseID = $this->instancename . ':' . $this->moodlecourseid;
+        if (isset($mappedpanoptocourse)) {
+            $provisioninginfo->longname = $mappedpanoptocourse->DisplayName;
+            $provisioninginfo->ExternalCourseID = $mappedpanoptocourse->ExternalCourseID;
+        } else {
+            $provisioninginfo->shortname = $DB->get_field(
+                'course',
+                'shortname',
+                array('id' => $this->moodlecourseid)
+            );
+
+            $provisioninginfo->longname = $DB->get_field(
+                'course',
+                'fullname',
+                array('id' => $this->moodlecourseid)
+            );
+
+            if (!isset($provisioninginfo->shortname) || empty($provisioninginfo->shortname)) {
+                $provisioninginfo->shortname = substr($provisioninginfo->longname, 0, 5);
+            }
+
+            $provisioninginfo->ExternalCourseID = $this->instancename . ':' . $this->moodlecourseid;
+        }
+
         $provisioninginfo->Server = $this->servername;
         $coursecontext = context_course::instance($this->moodlecourseid, MUST_EXIST);
 
@@ -328,32 +470,40 @@ class panopto_data {
         }
 
         // We need to go through each course importing this course, and add thier users to our couse on Panopto's side.
-        $childcourses = $this->get_import_target_list($this->moodlecourseid);
-        foreach ($childcourses as $childcourseid) {
-            $childcoursecontext = context_course::instance($childcourseid);
-            $currentusers = get_enrolled_users($childcoursecontext);
+        $provisioninginfo = $this->append_child_provisioning_info($provisioninginfo);
 
-            if (!empty($currentusers)) {
-
-                if (!isset($provisioninginfo->Students)) {
-                    $provisioninginfo->Students = array();
-                }
-
-                foreach ($currentusers as $user) {
-                    $userinfo = new stdClass;
-                    $userinfo->UserKey = $this->panopto_decorate_username($user->username);
-                    $userinfo->FirstName = $user->firstname;
-                    $userinfo->LastName = $user->lastname;
-                    $userinfo->Email = $user->email;
-
-                    if (!in_array($userinfo, $provisioninginfo->Students)) {
-                        array_push($provisioninginfo->Students, $userinfo);
-                    }
-                }
-            }
+        if ($getsharedinfo && $hasvalidpanoptoid) {
+            $provisioninginfo = $this->append_shared_course_info($provisioninginfo);
         }
 
         return $provisioninginfo;
+    }
+
+    /**
+     * Initializes and syncs a possible new import
+     *
+     * @param int $courseid the id of the recipient course
+     * @param int $newimport the id of the course being imported
+     *
+     */
+    public function init_and_sync_import($courseid, $newimportid) {
+        $currentimportsources = self::get_import_list($courseid);
+        $possibleimportsources = array_merge(
+            array($newimportid),
+            self::get_import_list($newimportid)
+        );
+
+        foreach ($possibleimportsources as $possiblenewimportsource) {
+            // If a course is already listed as an import we don't need to reprovision it.
+            if (!in_array($possiblenewimportsource, $currentimportsources)) {
+                $currentimportsources[] = $possiblenewimportsource;
+
+                self::add_new_course_import($courseid, $possiblenewimportsource);
+
+                $newimportpanopto = new panopto_data($possiblenewimportsource);
+                $newimportpanopto->provision_course($newimportpanopto->get_provisioning_info());
+            }
+        }
     }
 
     /**
@@ -364,14 +514,15 @@ class panopto_data {
      */
     public static function add_new_course_import($courseid, $newimportid) {
         global $DB;
-
         $rowarray = array('target_moodle_id' => $courseid, 'import_moodle_id' => $newimportid);
-        if ($DB->get_records('block_panopto_importmap', $rowarray)) {
-            return;
-        } else {
+
+        $currentrow = $DB->get_record('block_panopto_importmap', $rowarray);
+        if (!$currentrow) {
             $row = (object) $rowarray;
             return $DB->insert_record('block_panopto_importmap', $row);
         }
+
+        return;
     }
 
     /**
@@ -379,7 +530,7 @@ class panopto_data {
      *
      * @param int $courseid
      */
-    public function get_import_list($courseid) {
+    public static function get_import_list($courseid) {
         global $DB;
 
         $courseimports = $DB->get_records(
@@ -388,7 +539,6 @@ class panopto_data {
             null,
             'import_moodle_id'
         );
-
 
         $retarray = array();
         if (isset($courseimports) && !empty($courseimports)) {
@@ -405,7 +555,7 @@ class panopto_data {
      *
      * @param int $courseid
      */
-    public function get_import_target_list($courseid) {
+    public static function get_import_target_list($courseid) {
         global $DB;
 
         $courseimports = $DB->get_records(
@@ -504,6 +654,21 @@ class panopto_data {
      */
     public function panopto_decorate_username($moodleusername) {
         return ($this->instancename . "\\" . $moodleusername);
+    }
+
+    /**
+     * We need to retrieve the current course mapping in the constructor, so this must be static.
+     *
+     * @param int $moodlecourseid id of the current moodle course
+     */
+    public static function get_moodle_course_id($sessiongroupid) {
+        global $DB;
+        return $DB->get_records(
+            'block_panopto_foldermap',
+            array('panopto_id' => $sessiongroupid),
+            null,
+            'moodleid'
+        );
     }
 
     /**
