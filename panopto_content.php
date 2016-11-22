@@ -173,7 +173,11 @@ try {
                                     get_string('course_settings', 'block_panopto') .
                                 '</a>' .
                             "</div>\n";
+                    }
 
+                    // A the users who can provision are the moodle admin, and enrolled users given a publisher or creator role.
+                    // This makes it so can_user_provision will allow only creators/publishers or the moodle admin to see these links.
+                    if ($panoptodata->can_user_provision($courseid)) {
                         $systeminfo = $panoptodata->get_system_info();
                         $content->text .= "<div class='listItem'>" .
                             get_string('download_recorder', 'block_panopto') .
@@ -181,9 +185,7 @@ try {
                             "<a href='$systeminfo->RecorderDownloadUrl'>Windows</a>" .
                             " | <a href='$systeminfo->MacRecorderDownloadUrl'>Mac</a>)</span>" .
                             "</div>\n";
-                    }
 
-                    if ($panoptodata->can_user_provision($courseid)) {
                         $content->text .= '<br/>' .
                         "<a href='$CFG->wwwroot/blocks/panopto/provision_course_internal.php?id=$courseid'>" .
                         get_string('reprovision_course_link_text', 'block_panopto') . '</a>';
