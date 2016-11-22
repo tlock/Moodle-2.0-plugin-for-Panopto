@@ -86,6 +86,7 @@ $string['podcast_feeds'] = 'Podcast Feeds';
 $string['podcast_video'] = 'Video Podcast';
 $string['provision'] = 'Provision';
 $string['provision_course_link_text'] = 'Provision Course';
+$string['reprovision_course_link_text'] = 'Reprovision Course';
 $string['provision_courses'] = 'Provision Courses';
 $string['provision_error'] = 'Error provisioning course.';
 $string['provision_successful'] = 'Successfully provisioned course';

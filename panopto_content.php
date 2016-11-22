@@ -182,6 +182,12 @@ try {
                             " | <a href='$systeminfo->MacRecorderDownloadUrl'>Mac</a>)</span>" .
                             "</div>\n";
                     }
+
+                    if ($panoptodata->can_user_provision($courseid)) {
+                        $content->text .= '<br/>' .
+                        "<a href='$CFG->wwwroot/blocks/panopto/provision_course_internal.php?id=$courseid'>" .
+                        get_string('reprovision_course_link_text', 'block_panopto') . '</a>';
+                    }
                 }
             }
         } catch (Exception $e) {
