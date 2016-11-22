@@ -29,8 +29,6 @@ global $CFG;
 $numservers = get_config('block_panopto', 'server_number');
 $numservers = isset($numservers) ? $numservers : 0;
 
-$currversion = (isset($plugin) && isset($plugin->version)) ? $plugin->version : 0000000000;
-
 $default = 0;
 if ($ADMIN->fulltree) {
     $_SESSION['numservers'] = $numservers + 1;
@@ -134,10 +132,6 @@ if ($ADMIN->fulltree) {
             $courserolearray
         )
     );
-
-    $versionnumber = '<b>' . $currversion . '</b><br/>';
-    $settings->add(new admin_setting_heading('block_panopto_display_version', '',
-        'Current version of the panopto block: ' . $versionnumber));
 
     $link = '<a href="' . $CFG->wwwroot . '/blocks/panopto/provision_course.php">' .
         get_string('block_global_add_courses', 'block_panopto') . '</a>';
