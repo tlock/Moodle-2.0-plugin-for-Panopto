@@ -23,6 +23,7 @@
  */
 defined('MOODLE_INTERNAL') || die;
 require('version.php');
+require_once(dirname(__FILE__) . '/classes/admin/trim_configtext.php');
 global $CFG;
 
 $numservers = get_config('block_panopto', 'server_number');
@@ -44,7 +45,7 @@ if ($ADMIN->fulltree) {
         )
     );
     $settings->add(
-        new admin_setting_configtext(
+        new  admin_setting_configtext_trimmed(
             'block_panopto/instance_name',
             get_string('block_global_instance_name', 'block_panopto'),
             get_string('block_global_instance_desc', 'block_panopto'),
@@ -55,7 +56,7 @@ if ($ADMIN->fulltree) {
 
     for ($x = 0; $x <= $numservers; $x++) {
         $settings->add(
-            new admin_setting_configtext(
+            new admin_setting_configtext_trimmed(
                 'block_panopto/server_name' . ($x + 1),
                 get_string('block_global_hostname', 'block_panopto') . ' ' . ($x + 1),
                 get_string('block_global_hostname_desc', 'block_panopto'),
@@ -64,7 +65,7 @@ if ($ADMIN->fulltree) {
             )
         );
         $settings->add(
-            new admin_setting_configtext(
+            new admin_setting_configtext_trimmed(
                 'block_panopto/application_key' . ($x + 1),
                 get_string('block_global_application_key', 'block_panopto') . ' ' . ($x + 1),
                 get_string('block_global_application_key_desc', 'block_panopto'),
