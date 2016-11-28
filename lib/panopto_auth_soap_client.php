@@ -23,7 +23,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+// This can't be defined moodle internal because it is called from panopto to authorize login.
 
 /**
  * The auth soap client for panopto
