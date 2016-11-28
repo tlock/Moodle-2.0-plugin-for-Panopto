@@ -160,16 +160,16 @@ class block_panopto extends block_base {
             get_string('fetching_content', 'block_panopto') . '</font>', $params);
 
         $this->content->text .= '<script type="text/javascript">' .
-                    '// Function to pop up Panopto live note taker.' .
+                    // Function to pop up Panopto live note taker.
                     'function panopto_launchNotes(url) {' .
-                        '// Open empty notes window, then POST SSO form to it.' .
+                        // Open empty notes window, then POST SSO form to it.
                         'var notesWindow = window.open("", "PanoptoNotes", ' .
                             '"width=500,height=800,resizable=1,scrollbars=0,status=0,location=0");' .
                         'document.SSO.action = url;' .
                         'document.SSO.target = "PanoptoNotes";' .
                         'document.SSO.submit();' .
 
-                        '// Ensure the new window is brought to the front of the z-order.' .
+                        // Ensure the new window is brought to the front of the z-order.
                         'notesWindow.focus();' .
                     '}' .
 
@@ -178,7 +178,7 @@ class block_panopto extends block_base {
                         'document.SSO.target = "_blank";' .
                         'document.SSO.submit();' .
 
-                        '// Cancel default link navigation.' .
+                        // Cancel default link navigation.
                         'return false;' .
                     '}' .
 
