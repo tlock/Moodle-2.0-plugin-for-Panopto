@@ -162,14 +162,12 @@ if ($mform->is_cancelled()) {
     echo $OUTPUT->header();
 
     if ($courses) {
-        $provisioned = array();
-        $panoptodata = new panopto_data(null);
         foreach ($courses as $courseid) {
             if (empty($courseid)) {
                 continue;
             }
             // Set the current Moodle course to retrieve info for / provision.
-            $panoptodata->moodlecourseid = $courseid;
+            $panoptodata = new panopto_data($courseid);
 
             // If an application key and server name are pre-set (happens when provisioning from multi-select page) use those,
             // otherwise retrieve values from the db.

@@ -147,11 +147,7 @@ if ($mform->is_cancelled()) {
 
         // If a $selected server is set, it means that a server has been chosen and that the provisioning should be done instead of
         // loading the selection form.
-        $provisioned = array();
-        $panoptodata = new panopto_data(null);
-
-        // Set the current Moodle course to retrieve info for / provision.
-        $panoptodata->moodlecourseid = $courseid;
+        $panoptodata = new panopto_data($courseid);
 
         // If an application key and server name are pre-set (happens when provisioning from multi-select page) use those,
         // otherwise retrieve values from the db.
