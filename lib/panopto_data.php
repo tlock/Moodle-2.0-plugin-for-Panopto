@@ -1058,7 +1058,7 @@ class panopto_data {
         return new panopto_auth_soap_client($this->servername);
     }
 
-    protected function add_context_capability_to_roles($context, $roles, $capability) {
+    public static function add_context_capability_to_roles($context, $roles, $capability) {
         foreach ($roles as $role) {
             if (isset($role) && trim($role) !== '') {
                 assign_capability(
@@ -1085,14 +1085,14 @@ class panopto_data {
         // Clear capabilities from all of course's roles to be reassigned.
         self::clear_capabilities_for_course($courseid);
 
-        $this->add_context_capability_to_roles($coursecontext, $publisherroles, 'block/panopto:provision_aspublisher');
-        $this->add_context_capability_to_roles($coursecontext, $creatorroles, 'block/panopto:provision_asteacher');
+        self::add_context_capability_to_roles($coursecontext, $publisherroles, 'block/panopto:provision_aspublisher');
+        self::add_context_capability_to_roles($coursecontext, $creatorroles, 'block/panopto:provision_asteacher');
 
 
         $publishersystemroles = explode(',', get_config('block_panopto', 'publisher_system_role_mapping'));
         if (count($publishersystemroles)) {
             $systemcontext = context_system::instance();
-            $this->add_context_capability_to_roles($systemcontext, $publishersystemroles, 'block/panopto:provision_aspublisher');
+            self::add_context_capability_to_roles($systemcontext, $publishersystemroles, 'block/panopto:provision_aspublisher');
 
             // Mark dirty (moodle standard for capability changes at context level).
             $systemcontext->mark_dirty();
