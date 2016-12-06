@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * the provision course class for panopto
+ * a new admin setting that trims any input, supports maxlength
  *
  * @package block_panopto
  * @copyright Panopto 2009 - 2016 /With contributions from Spenser Jones (sjones@ambrose.edu),
@@ -27,12 +27,14 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Text input that trims any extra whitespace. Also supports maxlength
- *
+ * @copyright Panopto 2016
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class admin_setting_configtext_trimmed extends admin_setting_configtext_with_maxlength {
 
-    /** @var int maximum number of chars allowed. */
+    /**
+     * @var int maximum number of chars allowed.
+     */
     protected $maxlength;
 
     /**
@@ -55,14 +57,16 @@ class admin_setting_configtext_trimmed extends admin_setting_configtext_with_max
 
     /**
      * write data to storage
-     * @param string data
+     *
+     * @param string $data the data being written.
      */
     public function write_setting($data) {
         if ($this->paramtype === PARAM_INT and $data === '') {
-        // do not complain if '' used instead of 0
+            // Do not complain if '' used instead of 0.
             $data = 0;
         }
-        // $data is a string
+
+        // ...$data is a string.
         $trimmeddata = trim($data);
         $validated = $this->validate($trimmeddata);
         if ($validated !== true) {

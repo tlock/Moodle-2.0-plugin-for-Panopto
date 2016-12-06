@@ -245,7 +245,7 @@ class panopto_data {
      *
      */
     private function append_shared_course_info($provisioninginfo) {
-        $panoptoid = self::get_panopto_course_id($this->moodlecourseid);
+        $panoptoid = $this->sessiongroupid;
         $sharedcourses = self::get_moodle_course_id($panoptoid);
 
         foreach ($sharedcourses as $sharedcourse) {
@@ -373,7 +373,7 @@ class panopto_data {
         $provisioninginfo = new stdClass;
 
         // If we are provisioning a course with a panopto_id set we should provision that folder.
-        $coursepanoptoid = self::get_panopto_course_id($this->moodlecourseid);
+        $coursepanoptoid = $this->sessiongroupid;
         $hasvalidpanoptoid = isset($coursepanoptoid) && !empty($coursepanoptoid);
         if ($hasvalidpanoptoid) {
             $mappedpanoptocourse = $this->get_course();
@@ -1058,6 +1058,13 @@ class panopto_data {
         return new panopto_auth_soap_client($this->servername);
     }
 
+    /**
+     * Gives selected capabilities to specified roles given a context.
+     *
+     * @param int $context the context of the roles being given the capability
+     * @param array $roles an array of roles to be given the capability
+     * @param string $capability The capability being given to the roles
+     */
     public static function add_context_capability_to_roles($context, $roles, $capability) {
         foreach ($roles as $role) {
             if (isset($role) && trim($role) !== '') {
@@ -1087,7 +1094,6 @@ class panopto_data {
 
         self::add_context_capability_to_roles($coursecontext, $publisherroles, 'block/panopto:provision_aspublisher');
         self::add_context_capability_to_roles($coursecontext, $creatorroles, 'block/panopto:provision_asteacher');
-
 
         $publishersystemroles = explode(',', get_config('block_panopto', 'publisher_system_role_mapping'));
         if (count($publishersystemroles)) {

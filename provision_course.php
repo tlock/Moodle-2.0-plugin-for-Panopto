@@ -172,16 +172,20 @@ if ($mform->is_cancelled()) {
             // If an application key and server name are pre-set (happens when provisioning from multi-select page) use those,
             // otherwise retrieve values from the db.
             if (isset($selectedserver)) {
+
+                // If we are not using the same server remove the folder ID reference.
+                // NOTE: A moodle course can only point to one panopto server at a time.
+                // So reprovisioning to a different server erases the folder mapping to the original server.
+                if ($panoptodata->servername !== $selectedserver) {
+                    $panoptodata->sessiongroupid = null;
+                }
                 $panoptodata->servername = $selectedserver;
-            } else {
-                $panoptodata->servername = $panoptodata->get_panopto_servername($panoptodata->moodlecourseid);
             }
 
             if (isset($selectedkey)) {
                 $panoptodata->applicationkey = $selectedkey;
-            } else {
-                $panoptodata->applicationkey = $panoptodata->get_panopto_app_key($panoptodata->moodlecourseid);
             }
+
             $provisioningdata = $panoptodata->get_provisioning_info();
             $provisioneddata = $panoptodata->provision_course($provisioningdata);
             include('views/provisioned_course.html.php');

@@ -176,7 +176,7 @@ try {
                     }
 
                     // A the users who can provision are the moodle admin, and enrolled users given a publisher or creator role.
-                    // This makes it so can_user_provision will allow only creators/publishers or the moodle admin to see these links.
+                    // This makes it so can_user_provision will allow only creators/publishers/admins to see these links.
                     if ($panoptodata->can_user_provision($courseid)) {
                         $systeminfo = $panoptodata->get_system_info();
                         $content->text .= "<div class='listItem'>" .
