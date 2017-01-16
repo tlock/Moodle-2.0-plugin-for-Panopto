@@ -57,8 +57,9 @@ class block_panopto_rollingsync {
     public static function enrollmentcreated(\core\event\user_enrolment_created $event) {
         global $CFG;
 
-        if (\panopto_data::get_panopto_course_id($event->courseid) === false
-            || $CFG->version < self::$requiredversion) {
+        if (!\panopto_data::is_main_block_configured() ||
+            \panopto_data::get_panopto_course_id($event->courseid) === false ||
+            $CFG->version < self::$requiredversion) {
             return;
         }
 
@@ -85,8 +86,9 @@ class block_panopto_rollingsync {
     public static function enrollmentdeleted(\core\event\user_enrolment_deleted $event) {
         global $CFG;
 
-        if (\panopto_data::get_panopto_course_id($event->courseid) === false
-            || $CFG->version < self::$requiredversion) {
+        if (!\panopto_data::is_main_block_configured() ||
+            \panopto_data::get_panopto_course_id($event->courseid) === false ||
+            $CFG->version < self::$requiredversion) {
             return;
         }
 
@@ -114,8 +116,9 @@ class block_panopto_rollingsync {
     public static function enrolmentupdated(\core\event\user_enrolment_updated $event) {
         global $CFG;
 
-        if (\panopto_data::get_panopto_course_id($event->courseid) === false
-            || $CFG->version < self::$requiredversion) {
+        if (!\panopto_data::is_main_block_configured() ||
+            \panopto_data::get_panopto_course_id($event->courseid) === false ||
+            $CFG->version < self::$requiredversion) {
             return;
         }
 
@@ -154,8 +157,9 @@ class block_panopto_rollingsync {
     public static function roleadded(\core\event\role_assigned $event) {
         global $CFG;
 
-        if (\panopto_data::get_panopto_course_id($event->courseid) === false
-            || $CFG->version < self::$requiredversion) {
+        if (!\panopto_data::is_main_block_configured() ||
+            \panopto_data::get_panopto_course_id($event->courseid) === false ||
+            $CFG->version < self::$requiredversion) {
             return;
         }
 
@@ -181,6 +185,10 @@ class block_panopto_rollingsync {
      */
     public static function roledeleted(\core\event\role_unassigned $event) {
         global $CFG;
+
+        if (!\panopto_data::is_main_block_configured()) {
+            return;
+        }
 
         $panoptocourseid = \panopto_data::get_panopto_course_id($event->courseid);
         $hasminimumversion = $CFG->version >= self::$requiredversion;
@@ -210,6 +218,10 @@ class block_panopto_rollingsync {
      * @param \core\event\course_created $event
      */
     public static function coursecreated(\core\event\course_created $event) {
+        if (!\panopto_data::is_main_block_configured()) {
+            return;
+        }
+
         $allowautoprovision = get_config('block_panopto', 'auto_provision_new_courses');
 
         if ($allowautoprovision) {
@@ -236,6 +248,10 @@ class block_panopto_rollingsync {
      */
     public static function courserestored(\core\event\course_restored $event) {
         global $DB;
+
+        if (!\panopto_data::is_main_block_configured()) {
+            return;
+        }
 
         $originalcourseenabled = $event->other['samesite'] && isset($event->other['originalcourseid']);
         if (get_config('block_panopto', 'auto_sync_imports') && $originalcourseenabled) {

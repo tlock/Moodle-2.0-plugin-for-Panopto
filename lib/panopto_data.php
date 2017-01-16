@@ -702,6 +702,31 @@ class panopto_data {
     }
 
     /**
+     * Lets us know if we have a value inside the config for a panopto server, we don't want any of our events to fire on an unconfigured block.
+     *
+     */
+    public static function is_main_block_configured() {
+        $numservers = get_config('block_panopto', 'server_number');
+        $numservers = isset($numservers) ? $numservers : 0;
+
+        $isconfigured = false;
+        if ($numservers > 0) {
+            for ($i = 1; $i <= $numservers; ++$i) {
+                $possibleserver = get_config('block_panopto', 'server_name' . $i);
+                $possibleappkey = get_config('block_panopto', 'application_key' . $i);
+
+                if (isset($possibleserver) && !empty($possibleserver) &&
+                    isset($possibleappkey) && !empty($possibleappkey)) {
+                    $isconfigured = true;
+                    break;
+                }
+            }
+        }
+
+        return $isconfigured;
+    }
+
+    /**
      * We need to retrieve the current course mapping in the constructor, so this must be static.
      *
      * @param int $sessiongroupid id of the panopto folder we are trying to get the moodle courses associated with.
