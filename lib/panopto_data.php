@@ -745,7 +745,7 @@ class panopto_data {
             error_log("Panopto block requires a version newer than " . self::$requiredversion . ", your current version is: " . $CFG->version);
         }
 
-        return $isconfigured;
+        return $hasminversion;
     }
 
     /**
