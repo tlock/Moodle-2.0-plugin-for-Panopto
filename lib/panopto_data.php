@@ -461,12 +461,16 @@ class panopto_data {
         // New capability used to identify instructors for provisioning.
         $instructors = get_users_by_capability($coursecontext, 'block/panopto:provision_asteacher');
 
-        // All super admins should get access to all panopto courses as teachers, since they can all provision in the config page.
-        $sql = "SELECT username, firstname, lastname, email " .
-               "FROM {user} " .
-               "WHERE id IN ($CFG->siteadmins)";
+        if (get_config('block_panopto', 'auto_add_admins')) {
+            // All super admins should get access to all panopto courses as teachers, since they can all provision in the config page.
+            $sql = "SELECT username, firstname, lastname, email " .
+                   "FROM {user} " .
+                   "WHERE id IN ($CFG->siteadmins)";
 
-        $superadmins = $DB->get_records_sql($sql);
+            $superadmins = $DB->get_records_sql($sql);
+        } else {
+            $superadmins = array();
+        }
 
         if (empty($instructors)) {
             $instructors = array();
