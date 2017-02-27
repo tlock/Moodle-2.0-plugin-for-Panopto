@@ -933,6 +933,21 @@ class panopto_data {
     }
 
     /**
+     * Delete the panopto foldermap row, called when a course is deleted
+     *
+     * @param int $moodlecourseid id of the target moodle course
+     */
+    public static function delete_panopto_relation($moodlecourseid) {
+        global $DB;
+        if ($DB->get_records('block_panopto_foldermap', array('moodleid' => $moodlecourseid))) {
+            return $DB->delete_records(
+                'block_panopto_foldermap',
+                array('moodleid' => $moodlecourseid)
+            );
+        }
+    }
+
+    /**
      * Get list of available courses from db based on user's access level on course
      */
     public function get_course_options() {
