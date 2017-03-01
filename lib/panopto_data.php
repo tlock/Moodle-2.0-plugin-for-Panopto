@@ -933,18 +933,36 @@ class panopto_data {
     }
 
     /**
-     * Delete the panopto foldermap row, called when a course is deleted
+     * Delete the panopto foldermap row, called when a course is deleted.
+     * This function is unused but kept in case we decide to reintroduce the cleaning of table rows.
      *
      * @param int $moodlecourseid id of the target moodle course
      */
     public static function delete_panopto_relation($moodlecourseid) {
         global $DB;
+        $deletedrecords = array();
         if ($DB->get_records('block_panopto_foldermap', array('moodleid' => $moodlecourseid))) {
-            return $DB->delete_records(
+            $deletedrecords['foldermap'] = $DB->delete_records(
                 'block_panopto_foldermap',
                 array('moodleid' => $moodlecourseid)
             );
         }
+
+        if ($DB->get_records('block_panopto_importmap', array('target_moodle_id' => $moodlecourseid))) {
+            $deletedrecords['imports'] = $DB->delete_records(
+                'block_panopto_importmap',
+                array('target_moodle_id' => $moodlecourseid)
+            );
+        }
+
+        if ($DB->get_records('block_panopto_importmap', array('import_moodle_id' => $moodlecourseid))) {
+            $deletedrecords['exports'] = $DB->delete_records(
+                'block_panopto_importmap',
+                array('import_moodle_id' => $moodlecourseid)
+            );
+        }
+
+        return $deletedrecords;
     }
 
     /**
