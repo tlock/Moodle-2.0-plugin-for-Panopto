@@ -809,19 +809,30 @@ class panopto_data {
         $pubroles = array();
         $creatorroles = array();
 
-         // Get publisher roles as string and explode to array.
-        $rolesraw = $DB->get_record(
-            'block_panopto_foldermap',
-            array('moodleid' => $moodlecourseid),
-            'publisher_mapping, creator_mapping'
+         // Get creator roles as an array.
+        $creatorrolesraw = $DB->get_records(
+            'block_panopto_creatormap',
+            array('moodle_id' => $moodlecourseid),
+            'role_id'
         );
 
-        if ($rolesraw && !empty($rolesraw->publisher_mapping)) {
-            $pubroles = explode("," , $rolesraw->publisher_mapping);
+        if (isset($creatorrolesraw) && !empty($creatorrolesraw)) {
+            foreach($creatorrolesraw as $creatorrole) {
+                $creatorroles[] = $creatorrole->role_id;
+            }
         }
 
-        if ($rolesraw && !empty($rolesraw->creator_mapping)) {
-            $creatorroles = explode(",", $rolesraw->creator_mapping);
+         // Get publisher roles as an array.
+        $pubrolesraw = $DB->get_records(
+            'block_panopto_publishermap',
+            array('moodle_id' => $moodlecourseid),
+            'role_id'
+        );
+
+        if (isset($pubrolesraw) && !empty($pubrolesraw)) {
+            foreach($pubrolesraw as $pubrole) {
+                $pubroles[] = $pubrole->role_id;
+            }
         }
 
         return array('publisher' => $pubroles, 'creator' => $creatorroles);
@@ -901,34 +912,20 @@ class panopto_data {
     public static function set_course_role_mappings($moodlecourseid, $publisherroles, $creatorroles) {
         global $DB;
 
-        // Implode roles to string.
-        $publisherrolestring = implode(',', $publisherroles);
+        // Delete all old records to prevent non-existant mapping staying when they shouldn't.
+        $DB->delete_records('block_panopto_publishermap', array('moodle_id' => $moodlecourseid));
 
-        if ($DB->get_records('block_panopto_foldermap', array('moodleid' => $moodlecourseid))) {
-            $pubsuccess = $DB->set_field(
-                'block_panopto_foldermap',
-                'publisher_mapping',
-                $publisherrolestring,
-                array('moodleid' => $moodlecourseid)
-            );
-        } else {
-            $row = (object) array('moodleid' => $moodlecourseid, 'publisher_mapping' => $publisherrolestring);
-            $pubsuccess = $DB->insert_record('block_panopto_foldermap', $row);
+        foreach ($publisherroles as $pubrole) {
+            $row = (object) array('moodle_id' => $moodlecourseid, 'role_id' => $pubrole);
+            $DB->insert_record('block_panopto_publishermap', $row);
         }
 
-        // Implode roles to string.
-        $creatorrolestring = implode(',', $creatorroles);
+        // Delete all old records to prevent non-existant mapping staying when they shouldn't.
+        $DB->delete_records('block_panopto_creatormap', array('moodle_id' => $moodlecourseid));
 
-        if ($DB->get_records('block_panopto_foldermap', array('moodleid' => $moodlecourseid))) {
-            $csuccess = $DB->set_field(
-                'block_panopto_foldermap',
-                'creator_mapping',
-                $creatorrolestring,
-                array('moodleid' => $moodlecourseid)
-            );
-        } else {
-            $row = (object) array('moodleid' => $moodlecourseid, 'creator_mapping' => $creatorrolestring);
-            $csuccess = $DB->insert_record('block_panopto_foldermap', $row);
+        foreach ($creatorroles as $creatorrole) {
+            $row = (object) array('moodle_id' => $moodlecourseid, 'role_id' => $creatorrole);
+            $DB->insert_record('block_panopto_creatormap', $row);
         }
     }
 
