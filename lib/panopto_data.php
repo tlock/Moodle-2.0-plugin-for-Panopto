@@ -399,10 +399,9 @@ class panopto_data {
                 $provisioninginfo->longname = $namechunks[1];
             } else if ($chunkscount === 1) {
                 // This is a weird case I don't expect to happen. This should only occur if the user maps to a panopto folder that does not contain any colons.
-                $provisioninginfo->shortname = "";
-                $provisioninginfo->longname = $namechunks[0];;
+                $provisioninginfo->shortname = '';
+                $provisioninginfo->longname = $namechunks[0];
             } else {
-
                 $provisioninginfo->shortname = $namechunks[0];
                 $mappedlongname = '';
 
