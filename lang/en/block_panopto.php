@@ -56,7 +56,7 @@ $string['block_global_instance_name'] = 'Moodle Instance Name';
 $string['block_panopto_server_number_desc'] = 'Click \'Save Changes\' to update number of servers.';
 $string['block_panopto_server_number_name'] = 'Number of Panopto Servers';
 $string['block_panopto_async_tasks'] = 'Asynchronous enrollment sync';
-$string['block_panopto_async_tasks_desc'] = 'Enable this option to allow course and enrollment tasks to run in the background.';
+$string['block_panopto_async_tasks_desc'] = 'Enable this option to allow the sync user task that happens during login to run in the background. Check this option if the login operation is taking longer than desired.';
 $string['block_panopto_auto_provision'] = 'Automatically provision newly created courses';
 $string['block_panopto_auto_provision_desc'] = 'Enable this option to automatically provision a Panopto course folder when a course is created.';
 $string['block_panopto_prefix_new_folder_shortnames'] = 'Prefix new Panopto folder display names with the Moodle course\'s shortname.';
@@ -128,7 +128,7 @@ $string['take_notes'] = 'Take Notes';
 $string['unconfigured'] = 'Global configuration incomplete. Please contact your system administrator.';
 $string['unknown_provisioning_error'] = "An unknown error has occurred.";
 $string['unprovisioned'] = 'This course has not yet been provisioned.';
-$string['upgrade_provision_access_error'] = 'UPGRADE BLOCKED: Guests are not allowed to perform this upgrade to the Panopto block. Please log into a valid user and retry.';
+$string['upgrade_provision_access_error'] = 'UPGRADE BLOCKED: The user does not have access to a provisioned Panopto course folder. Upgrading user must have at least viewer access to all Panopto course folders. It is highly reccommended that the upgrading user is an Administrator on Panopto.';
 $string['upgrade_panopto_required_version'] = 'A Panopto server you are using does not meet the minimum required version to support this version of the Moodle Panopto Block. The upgrade will be blocked from succeeding until all Panopto servers in use meet miniumum version requirements.';
 $string['watch_live'] = 'Watch Live';
 /* End of file block_panopto.php */

@@ -239,45 +239,6 @@ class panopto_data {
         }
     }
 
-    /**
-     * Create the background manager used behind the scenes for upgrade API calls and info registry calls that are restricted to panopto admin only.
-     */
-    public function ensure_background_admin() {
-        $backgroundadminuname = "backgroundadminuser";
-        $adminuserkey = panopto_decorate_username($backgroundadminuname);
-        // If no user soap client exists instantiate one.
-        $this->ensure_user_manager();
-
-        // Creates new user if it doesn't exist, does nothing if the user already does.
-        $newbackgroundadminuser = $this->usermanager->create_user(
-            'noreply@dummy.com', // Email.
-            false, // EmailSessionNotifications.
-            'Background', // FirstName.
-            null, // GroupMemberships.
-            'Admin', // LastName.
-            'Admin', // SystemRole.
-            null, // UserBio.
-            null, // UserId.
-            $adminuserkey, // Userkey.
-            null, // UserSettingsUrl.
-            null // Password
-        );
-
-        $this->uname = $backgroundadminuname;
-    }
-
-    /**
-     * Return the session manager, if it does not yet exist try to create it.
-     */
-    public function unset_background_admin() {
-        if (isset($USER->username)) {
-            $username = $USER->username;
-        } else {
-            $username = 'guest';
-        }
-        $this->uname = $username;
-    }
-
 
     /**
      * Create the Panopto course folder and populate its ACLs.
@@ -285,7 +246,7 @@ class panopto_data {
      * @param object $provisioninginfo info for course being provisioned
      */
     public function provision_course($provisioninginfo) {
-        global $CFG;
+        global $CFG, $USER;
 
 
         if (isset($provisioninginfo->fullname) && !empty($provisioninginfo->fullname) &&
@@ -316,8 +277,8 @@ class panopto_data {
                     $provisioninginfo->externalcourseid
                 );
 
-                // Only Panopto admins can report integration info.
-                $this->ensure_background_admin();
+                // Sync access of the privisioning user so they don't need to relog to view the folder.
+                \panopto_data::sync_external_user($USER->id);
 
                 $this->ensure_auth_manager();
 
@@ -328,7 +289,6 @@ class panopto_data {
                     $CFG->version
                 );
 
-                $this->unset_background_admin();
             } else {
                 // Give the user some basic info they can use to debug or send to AE.
                 $courseinfo = new stdClass;
@@ -436,13 +396,13 @@ class panopto_data {
 
             $provisioninginfo->fullname = '';
             if (get_config('block_panopto', 'prefix_new_folder_names')) {
-                $provisioninginfo->fullname .= $provisioninginfo->shortname . ':';
+                $provisioninginfo->fullname .= $provisioninginfo->shortname . ': ';
             }
             $provisioninginfo->fullname .= $provisioninginfo->longname;
         }
 
         // Always set this, even in the case of an already existing folder we will overwrite the old Id with this one.
-        $provisioninginfo->externalcourseid = $this->moodlecourseid;
+        $provisioninginfo->externalcourseid = $this->instancename . ':' . $this->moodlecourseid;
 
         return $provisioninginfo;
     }
@@ -613,10 +573,17 @@ class panopto_data {
 
             $currentcourses = array();
             foreach($coursestosync as $course) {
-                $courseobj = new stdClass;
-                $courseobj->id = $course->moodleid;
+                $moodlecourse = $DB->get_record('course', array('id' => $course->moodleid));
 
-                $currentcourses[] = $courseobj;
+                if (isset($moodlecourse) && !empty($moodlecourse) && $moodlecourse !== false) {
+                    $courseobj = new stdClass;
+                    $courseobj->id = $course->moodleid;
+                    $currentcourses[] = $courseobj;
+                } else {
+                    // The course does not exist in Moodle, move it to the old table for cleanup.
+                    error_log(get_string('moodle_course_not_exist', 'block_panopto'));
+                    panopto_data::delete_panopto_relation($course->moodleid, true);
+                }
             }
         } else {
             $currentcourses = enrol_get_users_courses($userid, true);
@@ -624,64 +591,50 @@ class panopto_data {
 
         // Go through each course
         foreach ($currentcourses as $course) {
+            $coursecontext = context_course::instance($course->id);
+            $coursegroups = array();
 
-            $moodlecourse = $DB->get_records(
-                'course',
-                array('id' => $course->id),
-                null,
-                'id,fullname'
-            );
+            $coursepanopto = new panopto_data($course->id);
 
-            if (isset($moodlecourse) && !empty($moodlecourse)) {
-                $coursecontext = context_course::instance($course->id);
-                $coursegroups = array();
-
-                $coursepanopto = new panopto_data($course->id);
-
-                // Check to see if we are already going to provision a specific Panopto server, if we are just add the groups to the already made array
-                // If not add the server to the list of servers.
-                if (isset($coursepanopto->servername) && !empty($coursepanopto->servername) &&
-                    isset($coursepanopto->applicationkey) && !empty($coursepanopto->applicationkey) &&
-                    isset($coursepanopto->sessiongroupid) && !empty($coursepanopto->sessiongroupid)) {
+            // Check to see if we are already going to provision a specific Panopto server, if we are just add the groups to the already made array
+            // If not add the server to the list of servers.
+            if (isset($coursepanopto->servername) && !empty($coursepanopto->servername) &&
+                isset($coursepanopto->applicationkey) && !empty($coursepanopto->applicationkey) &&
+                isset($coursepanopto->sessiongroupid) && !empty($coursepanopto->sessiongroupid)) {
 
 
-                    $role = self::get_role_from_context($coursecontext, $userid);
+                $role = self::get_role_from_context($coursecontext, $userid);
 
-                    // If the admin is already a creator or publisher do nothing.
-                    if ($setupasadmin && $role === 'Viewer') {
-                        $role = 'Creator';
-                    }
-
-                    // Build a list of ExternalGroupIds using a specific format, e.g. moodle31:courseId_viewers/moodle31:courseId_creators
-                    $groupname = $instancename . ":" . $course->id;
-                    if (strpos($role, 'Viewer') !== false) {
-                        $coursegroups[] = $groupname . "_viewers";
-                    }
-
-                    if (strpos($role, 'Creator') !== false) {
-                        $coursegroups[] = $groupname . "_creators";
-                    }
-
-                    if (strpos($role, 'Publisher') !== false) {
-                        $coursegroups[] = $groupname . "_publishers";
-                    }
-
-                    if(!array_key_exists($coursepanopto->servername, $servergroupidlist)) {
-                        $servergroupidlist[$coursepanopto->servername] = array(
-                            'panopto' => $coursepanopto,
-                            'externalgroupids' => array_merge(array(), $coursegroups)
-                        );
-                    } else {
-                        $servergroupidlist[$coursepanopto->servername]['externalgroupids'] = array_merge(
-                            $servergroupidlist[$coursepanopto->servername]['externalgroupids'],
-                            $coursegroups
-                        );
-                    }
+                // If the admin is already a creator or publisher do nothing.
+                if ($setupasadmin && $role === 'Viewer') {
+                    $role = 'Creator';
                 }
-            } else {
-                // The course does not exist in Moodle, move it to the old table for cleanup.
-                error_log(get_string('moodle_course_not_exist', 'block_panopto'));
-                panopto_data::delete_panopto_relation($course->id, true);
+
+                // Build a list of ExternalGroupIds using a specific format, e.g. moodle31:courseId_viewers/moodle31:courseId_creators
+                $groupname = $coursepanopto->instancename . ':' . $course->id;
+                if (strpos($role, 'Viewer') !== false) {
+                    $coursegroups[] = $groupname . "_viewers";
+                }
+
+                if (strpos($role, 'Creator') !== false) {
+                    $coursegroups[] = $groupname . "_creators";
+                }
+
+                if (strpos($role, 'Publisher') !== false) {
+                    $coursegroups[] = $groupname . "_publishers";
+                }
+
+                if(!array_key_exists($coursepanopto->servername, $servergroupidlist)) {
+                    $servergroupidlist[$coursepanopto->servername] = array(
+                        'panopto' => $coursepanopto,
+                        'externalgroupids' => array_merge(array(), $coursegroups)
+                    );
+                } else {
+                    $servergroupidlist[$coursepanopto->servername]['externalgroupids'] = array_merge(
+                        $servergroupidlist[$coursepanopto->servername]['externalgroupids'],
+                        $coursegroups
+                    );
+                }
             }
         }
 
