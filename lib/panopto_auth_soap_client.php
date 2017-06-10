@@ -32,7 +32,7 @@
  * Skylar Kelty <S.Kelty@kent.ac.uk>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-require_once dirname(__FILE__) . '/AuthManagement/AuthManagementAutoload.php';
+require_once(dirname(__FILE__) . '/AuthManagement/AuthManagementAutoload.php');
 
 class panopto_auth_soap_client extends SoapClient {
 
@@ -61,7 +61,7 @@ class panopto_auth_soap_client extends SoapClient {
         $this->apiurl = 'https://'. $servername . '/Panopto/PublicAPI/4.2/Auth.svc?wsdl';
 
         // Cache web service credentials for all calls requiring authentication.
-        $this->authparam = new AuthManagementStructAuthenticationInfo($apiuserauthcode, NULL, $apiuseruserkey);
+        $this->authparam = new AuthManagementStructAuthenticationInfo($apiuserauthcode, null, $apiuseruserkey);
     }
 
     /**
@@ -70,10 +70,9 @@ class panopto_auth_soap_client extends SoapClient {
     public function get_server_version() {
         $returnvalue = false;
         $authmanagementserviceget = new AuthManagementServiceGet(array('wsdl_url' => $this->apiurl));
-        if($authmanagementserviceget->GetServerVersion()) {
+        if ($authmanagementserviceget->GetServerVersion()) {
             $returnvalue = $authmanagementserviceget->getResult()->GetServerVersionResult;
-        }
-        else {
+        } else {
             error_log(print_r($authmanagementserviceget->getLastError(), true));
         }
         return $returnvalue;
@@ -96,7 +95,7 @@ class panopto_auth_soap_client extends SoapClient {
             strval($targetplatformversion)
         );
 
-        if($authmanagementservicereport->ReportIntegrationInfo($reportparams)) {
+        if ($authmanagementservicereport->ReportIntegrationInfo($reportparams)) {
             $returnvalue = true;
         } else {
             $lasterror = $authmanagementservicereport->getLastError()['AuthManagementServiceReport::ReportIntegrationInfo'];

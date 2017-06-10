@@ -29,7 +29,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once dirname(__FILE__) . '/SessionManagement/SessionManagementAutoload.php';
+defined('MOODLE_INTERNAL') || die();
+
+require_once(dirname(__FILE__) . '/SessionManagement/SessionManagementAutoload.php');
 
 class panopto_session_soap_client extends SoapClient {
     /**
@@ -78,13 +80,13 @@ class panopto_session_soap_client extends SoapClient {
         // Cache web service credentials for all calls requiring authentication.
         $this->authparam = new SessionManagementStructAuthenticationInfo(
             $apiuserauthcode,
-            NULL,
+            null,
             $apiuseruserkey
         );
     }
 
     // Possibly unneeded since Moodle won't support multiple folders without behavior change.
-    public function add_folder($foldername, $parentguids = NULL, $ispublic = false) {
+    public function add_folder($foldername, $parentguids = null, $ispublic = false) {
         $ret = false;
 
         if (!isset($this->sessionmanagementserviceadd)) {
@@ -99,8 +101,7 @@ class panopto_session_soap_client extends SoapClient {
             $ispublic
         );
 
-        // sample call for SessionManagementServiceAdd::AddFolder()
-        if($this->sessionmanagementserviceadd->AddFolder($folderparams)) {
+        if ($this->sessionmanagementserviceadd->AddFolder($folderparams)) {
             $ret = $this->sessionmanagementserviceadd->getResult();
         } else {
             error_log(print_r($this->sessionmanagementserviceadd->getLastError(), true));
@@ -125,16 +126,16 @@ class panopto_session_soap_client extends SoapClient {
         );
         $rolelist = new SessionManagementStructArrayOfAccessRole($rolestoensure);
 
-        $provisionParams = new SessionManagementStructProvisionExternalCourseWithRoles(
+        $provisionparams = new SessionManagementStructProvisionExternalCourseWithRoles(
             $this->authparam,
             $fullname,
             $externalcourseid,
             $rolelist
         );
 
-        if($this->sessionmanagementserviceprovision->ProvisionExternalCourseWithRoles($provisionParams)){
-            $retObj = $this->sessionmanagementserviceprovision->getResult();
-            $ret = $retObj->ProvisionExternalCourseWithRolesResult;
+        if ($this->sessionmanagementserviceprovision->ProvisionExternalCourseWithRoles($provisionparams)) {
+            $retobj = $this->sessionmanagementserviceprovision->getResult();
+            $ret = $retobj->ProvisionExternalCourseWithRolesResult;
         } else {
             error_log(print_r($this->sessionmanagementserviceprovision->getLastError(), true));
         }
@@ -145,7 +146,7 @@ class panopto_session_soap_client extends SoapClient {
     public function set_external_course_access_for_roles($fullname, $externalcourseid, $folderids) {
         $ret = false;
 
-        if(!isset($this->sessionmanagementserviceset)) {
+        if (!isset($this->sessionmanagementserviceset)) {
             $this->sessionmanagementserviceset = new SessionManagementServiceSet(
                 array('wsdl_url' => $this->apiurl)
             );
@@ -172,10 +173,10 @@ class panopto_session_soap_client extends SoapClient {
             $rolelist
         );
 
-        if($this->sessionmanagementserviceset->SetExternalCourseAccessForRoles($courseaccessparams)) {
-            $retObj = $this->sessionmanagementserviceset->getResult();
+        if ($this->sessionmanagementserviceset->SetExternalCourseAccessForRoles($courseaccessparams)) {
+            $retobj = $this->sessionmanagementserviceset->getResult();
             // We do not support multiple folders per course in Moodle atm so we can assume 1 result.
-            $ret = $retObj->SetExternalCourseAccessForRolesResult->Folder[0];
+            $ret = $retobj->SetExternalCourseAccessForRolesResult->Folder[0];
         } else {
             error_log(print_r($this->sessionmanagementserviceset->getLastError(), true));
         }
@@ -213,9 +214,9 @@ class panopto_session_soap_client extends SoapClient {
             $rolelist
         );
 
-        if($this->sessionmanagementserviceset->SetCopiedExternalCourseAccessForRoles($copiedaccessparams)) {
-            $retObj = $this->sessionmanagementserviceset->getResult();
-            $ret = $retObj->SetCopiedExternalCourseAccessForRolesResult->Folder[0];
+        if ($this->sessionmanagementserviceset->SetCopiedExternalCourseAccessForRoles($copiedaccessparams)) {
+            $retobj = $this->sessionmanagementserviceset->getResult();
+            $ret = $retobj->SetCopiedExternalCourseAccessForRolesResult->Folder[0];
         } else {
             error_log(print_r($this->sessionmanagementserviceset->getLastError(), true));
         }
@@ -238,9 +239,9 @@ class panopto_session_soap_client extends SoapClient {
         $folderidlist = new SessionManagementStructArrayOfguid($folderids);
         $getfolderparams = new SessionManagementStructGetFoldersById($this->authparam, $folderidlist);
 
-        if($this->sessionmanagementserviceget->GetFoldersById($getfolderparams)) {
-            $retObj = $this->sessionmanagementserviceget->getResult();
-            $ret = $retObj->GetFoldersByIdResult->Folder[0];
+        if ($this->sessionmanagementserviceget->GetFoldersById($getfolderparams)) {
+            $retobj = $this->sessionmanagementserviceget->getResult();
+            $ret = $retobj->GetFoldersByIdResult->Folder[0];
         } else {
             $lasterror = $this->sessionmanagementserviceget->getLastError()['SessionManagementServiceGet::GetFoldersById'];
 
@@ -276,9 +277,9 @@ class panopto_session_soap_client extends SoapClient {
             $folderidlist
         );
 
-        if($this->sessionmanagementserviceget->GetFoldersByExternalId()) {
-            $retObj = $this->sessionmanagementserviceget->getResult();
-            $ret = $retObj->GetFoldersByExternalIdResult->Folder[0];
+        if ($this->sessionmanagementserviceget->GetFoldersByExternalId()) {
+            $retobj = $this->sessionmanagementserviceget->getResult();
+            $ret = $retobj->GetFoldersByExternalIdResult->Folder[0];
         } else {
             error_log(print_r($this->sessionmanagementserviceget->getLastError(), true));
         }
@@ -298,7 +299,7 @@ class panopto_session_soap_client extends SoapClient {
         $resultsperpage = 1000;
         $currentpage = 0;
         $pagination = new SessionManagementStructPagination($resultsperpage, $currentpage);
-        $parentfolderid = NULL;
+        $parentfolderid = null;
         $publiconly = false;
         $sortby = SessionManagementEnumFolderSortField::VALUE_NAME;
         $sortincreasing = true;
@@ -312,7 +313,7 @@ class panopto_session_soap_client extends SoapClient {
             $sortincreasing,
             $wildcardsearchnameonly
         );
-        $searchquery = NULL;
+        $searchquery = null;
 
         $folderlistparams = new SessionManagementStructGetFoldersList(
             $this->authparam,
@@ -320,18 +321,18 @@ class panopto_session_soap_client extends SoapClient {
             $searchquery
         );
 
-        if($this->sessionmanagementserviceget->GetFoldersList($folderlistparams)) {
-            $retObj = $this->sessionmanagementserviceget->getResult();
-            $totalresults = $retObj->GetFoldersListResult->TotalNumberResults;
+        if ($this->sessionmanagementserviceget->GetFoldersList($folderlistparams)) {
+            $retobj = $this->sessionmanagementserviceget->getResult();
+            $totalresults = $retobj->GetFoldersListResult->TotalNumberResults;
             error_log(print_r($totalresults, true));
 
-            $folderlist = $retObj->GetFoldersListResult->Results->Folder;
+            $folderlist = $retobj->GetFoldersListResult->Results->Folder;
 
             if ($totalresults > $resultsperpage) {
 
                 $folderstoget = $totalresults - $resultsperpage;
                 ++$currentpage;
-                while($folderstoget > 0) {
+                while ($folderstoget > 0) {
                     $pagination = new SessionManagementStructPagination($resultsperpage, $currentpage);
 
                     $folderlistrequest = new SessionManagementStructListFoldersRequest(
@@ -349,9 +350,9 @@ class panopto_session_soap_client extends SoapClient {
                         $searchquery
                     );
 
-                    if($this->sessionmanagementserviceget->GetFoldersList($folderlistparams)) {
-                        $retObj = $this->sessionmanagementserviceget->getResult();
-                        $folderlist = array_merge($folderlist, $retObj->GetFoldersListResult->Results->Folder);
+                    if ($this->sessionmanagementserviceget->GetFoldersList($folderlistparams)) {
+                        $retobj = $this->sessionmanagementserviceget->getResult();
+                        $folderlist = array_merge($folderlist, $retobj->GetFoldersListResult->Results->Folder);
                     } else {
                         error_log(print_r($this->sessionmanagementserviceget->getLastError(), true));
                         break;
@@ -379,10 +380,10 @@ class panopto_session_soap_client extends SoapClient {
             );
         }
 
-        $startdate = NULL;
-        $enddate = NULL;
+        $startdate = null;
+        $enddate = null;
         $pagination = new SessionManagementStructPagination(100, 0);
-        $remoterecorderid = NULL;
+        $remoterecorderid = null;
         $sortby = SessionManagementEnumSessionSortField::VALUE_DATE;
         $sortincreasing = true;
         $states = new SessionManagementStructArrayOfSessionState(
@@ -403,7 +404,7 @@ class panopto_session_soap_client extends SoapClient {
             $startdate,
             $states
         );
-        $searchquery = NULL;
+        $searchquery = null;
 
         $getsessionlistparams = new SessionManagementStructGetSessionsList(
             $this->authparam,
@@ -411,7 +412,7 @@ class panopto_session_soap_client extends SoapClient {
             $searchquery
         );
 
-        if($this->sessionmanagementserviceget->GetSessionsList($getsessionlistparams)) {
+        if ($this->sessionmanagementserviceget->GetSessionsList($getsessionlistparams)) {
             $ret = $this->sessionmanagementserviceget->getResult()->GetSessionsListResult->Results->Session;
         } else {
             error_log(print_r($this->sessionmanagementserviceget->getLastError(), true));
@@ -429,8 +430,7 @@ class panopto_session_soap_client extends SoapClient {
             );
         }
 
-
-        if($this->sessionmanagementserviceget->GetRecorderDownloadUrls()) {
+        if ($this->sessionmanagementserviceget->GetRecorderDownloadUrls()) {
             $ret = $this->sessionmanagementserviceget->getResult()->GetRecorderDownloadUrlsResult;
         } else {
             error_log(print_r($this->sessionmanagementserviceget->getLastError(), true));

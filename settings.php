@@ -28,7 +28,7 @@ global $CFG;
 $numservers = get_config('block_panopto', 'server_number');
 $numservers = isset($numservers) ? $numservers : 0;
 
-// Increment numservers by 1 to take into account starting at 0;
+// Increment numservers by 1 to take into account starting at 0.
 ++$numservers;
 
 if ($ADMIN->fulltree) {

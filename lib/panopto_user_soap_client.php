@@ -29,7 +29,9 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once dirname(__FILE__) . '/UserManagement/UserManagementAutoload.php';
+defined('MOODLE_INTERNAL') || die();
+
+require_once(dirname(__FILE__) . '/UserManagement/UserManagementAutoload.php');
 
 class panopto_user_soap_client extends SoapClient {
     /**
@@ -56,7 +58,7 @@ class panopto_user_soap_client extends SoapClient {
         $this->apiurl = 'https://'. $servername . '/Panopto/PublicAPI/4.6/UserManagement.svc?wsdl';
 
         // Cache web service credentials for all calls requiring authentication.
-        $this->authparam = new UserManagementStructAuthenticationInfo($apiuserauthcode, NULL, $apiuseruserkey);
+        $this->authparam = new UserManagementStructAuthenticationInfo($apiuserauthcode, null, $apiuseruserkey);
     }
 
     /**
@@ -80,7 +82,7 @@ class panopto_user_soap_client extends SoapClient {
         );
 
         // Returns false if the call failed.
-        if(!$usermanagementsync->SyncExternalUser($syncparamsobject)) {
+        if (!$usermanagementsync->SyncExternalUser($syncparamsobject)) {
             error_log(print_r($usermanagementsync->getLastError(), true));
         }
     }
@@ -94,7 +96,7 @@ class panopto_user_soap_client extends SoapClient {
         );
 
         // Returns false if the call failed.
-        if($usermanagementserviceget->GetUserByKey($getuserbykeyparams)) {
+        if ($usermanagementserviceget->GetUserByKey($getuserbykeyparams)) {
             $result = $usermanagementserviceget->getResult();
             error_log(print_r($result, true));
         } else {
@@ -104,7 +106,8 @@ class panopto_user_soap_client extends SoapClient {
         return $result;
     }
 
-    public function create_user($email, $emailsessionnotifications, $firstname, $groupmemberships, $lastname, $systemrole, $userbio, $userid, $userkey, $usersettingsurl, $password) {
+    public function create_user($email, $emailsessionnotifications, $firstname, $groupmemberships,
+                                $lastname, $systemrole, $userbio, $userid, $userkey, $usersettingsurl, $password) {
         $result = false;
         $usermanagementcreate = new UserManagementServiceCreate(array('wsdl_url' => $this->apiurl));
         $decoratedgroupmemberships = new UserManagementStructArrayOfguid($groupmemberships);
@@ -128,7 +131,7 @@ class panopto_user_soap_client extends SoapClient {
         );
 
         // Returns false if the call failed.
-        if($usermanagementcreate->CreateUser($createuserparams)) {
+        if ($usermanagementcreate->CreateUser($createuserparams)) {
             $result = $usermanagementcreate->getResult();
         } else {
             error_log(print_r($usermanagementcreate->getLastError(), true));

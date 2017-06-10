@@ -175,7 +175,7 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
 
     if ($oldversion < 2017031303) {
 
-        // Get the roles using the old method so we can update current customers to the new tables
+        // Get the roles using the old method so we can update current customers to the new tables.
         $pubroles = array();
         $creatorroles = array();
 
@@ -251,14 +251,13 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
         upgrade_block_savepoint(true, 2017031303, 'panopto');
     }
 
-    if ($oldversion < 2017060901) {
+    if ($oldversion < 2017061000) {
         // Get all active courses mapped to Panopto.
         $oldpanoptocourses = $DB->get_records(
             'block_panopto_foldermap',
             null,
             'moodleid'
         );
-
 
         $currindex = 0;
         $totalupgradesteps = count($oldpanoptocourses);
@@ -308,7 +307,7 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
             $oldpanoptocourse->provisioninginfo = $oldpanoptocourse->panopto->get_provisioning_info();
             if (isset($oldpanoptocourse->provisioninginfo->accesserror) &&
                $oldpanoptocourse->provisioninginfo->accesserror === true) {
-                $usercanupgrade =  false;
+                $usercanupgrade = false;
                 break;
             } else {
                 if (isset($oldpanoptocourse->provisioninginfo->couldnotfindmappedfolder) &&
@@ -319,12 +318,13 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
                     // Imports SHOULD still work for this case, so continue to below code.
                 }
                 $oldpanoptocourse->courseimports = panopto_data::get_import_list($oldpanoptocourse->panopto->moodlecourseid);
-                foreach($oldpanoptocourse->courseimports as $courseimport) {
+                foreach ($oldpanoptocourse->courseimports as $courseimport) {
                     $importpanopto = new panopto_data($courseimport);
-                    // false means the user failed to get the folder
+
+                    // False means the user failed to get the folder.
                     $importpanoptofolder = $importpanopto->get_folders_by_id();
                     if (isset($importpanoptofolder) && $importpanoptofolder === false) {
-                        $usercanupgrade =  false;
+                        $usercanupgrade = false;
                         break;
                     } else if (!isset($importpanoptofolder) || $importpanoptofolder === -1) {
                         // In this case the folder was not found, not an access issue. Most likely the folder was deleted and this is an old entry.
@@ -375,7 +375,7 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
         foreach ($panoptocourseobjects as $mappablecourse) {
             // This should add the required groups to the existing Panopto folder.
             $mappablecourse->panopto->provision_course($mappablecourse->provisioninginfo);
-            foreach($mappablecourse->courseimports as $importedcourse) {
+            foreach ($mappablecourse->courseimports as $importedcourse) {
                 $mappablecourse->panopto->init_and_sync_import($importedcourse);
             }
 
@@ -383,7 +383,7 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
             update_upgrade_progress($currindex, $totalupgradesteps);
         }
         // Panopto savepoint reached.
-        upgrade_block_savepoint(true, 2017060901, 'panopto');
+        upgrade_block_savepoint(true, 2017061000, 'panopto');
     }
 
     return true;

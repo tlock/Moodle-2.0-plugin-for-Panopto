@@ -81,12 +81,12 @@ try {
                         "<input type='hidden' name='instance' value='$panoptodata->instancename' /></form>";
 
 
-                    // Get all Completed,
+                    // Get all Completed.
                     $sessionlist = $panoptodata->get_session_list();
                     $livesessions = array();
 
                     if (is_array($sessionlist) && !empty($sessionlist)) {
-                        foreach($sessionlist as $sessionobj) {
+                        foreach ($sessionlist as $sessionobj) {
                             $sessionvars = get_object_vars($sessionobj);
 
                             if ($sessionobj->IsBroadcast && empty($sessionobj->Duration)) {

@@ -27,6 +27,7 @@ global $CFG;
 if (empty($CFG)) {
     require_once('../../config.php');
 }
+
 require_once($CFG->libdir . '/dmllib.php');
 require_once('block_panopto_lib.php');
 require_once('panopto_auth_soap_client.php');
@@ -185,13 +186,13 @@ class panopto_data {
      * Return the session manager, if it does not yet exist try to create it.
      */
     public function ensure_session_manager() {
-            // If no session soap client exists instantiate one.
-            if (!isset($this->sessionmanager)) {
-                $this->sessionmanager = panopto_data::instantiate_session_soap_client(
-                    $this->uname,
-                    $this->servername,
-                    $this->applicationkey
-                );
+        // If no session soap client exists instantiate one.
+        if (!isset($this->sessionmanager)) {
+            $this->sessionmanager = self::instantiate_session_soap_client(
+                $this->uname,
+                $this->servername,
+                $this->applicationkey
+            );
 
             if (!isset($this->sessionmanager)) {
                 error_log(get_string('api_manager_unavailable', 'block_panopto', 'session'));
@@ -206,12 +207,11 @@ class panopto_data {
         // If no session soap client exists instantiate one.
         if (!isset($this->authmanager)) {
             // If no auth soap client for this instance, instantiate one.
-            $this->authmanager = panopto_data::instantiate_auth_soap_client(
+            $this->authmanager = self::instantiate_auth_soap_client(
                 $this->uname,
                 $this->servername,
                 $this->applicationkey
             );
-
 
             if (!isset($this->authmanager)) {
                 error_log(get_string('api_manager_unavailable', 'block_panopto', 'auth'));
@@ -226,19 +226,17 @@ class panopto_data {
         // If no session soap client exists instantiate one.
         if (!isset($this->usermanager)) {
             // If no auth soap client for this instance, instantiate one.
-            $this->usermanager = panopto_data::instantiate_user_soap_client(
+            $this->usermanager = self::instantiate_user_soap_client(
                 $this->uname,
                 $this->servername,
                 $this->applicationkey
             );
-
 
             if (!isset($this->usermanager)) {
                 error_log(get_string('api_manager_unavailable', 'block_panopto', 'user'));
             }
         }
     }
-
 
     /**
      * Create the Panopto course folder and populate its ACLs.
@@ -247,7 +245,6 @@ class panopto_data {
      */
     public function provision_course($provisioninginfo) {
         global $CFG, $USER;
-
 
         if (isset($provisioninginfo->fullname) && !empty($provisioninginfo->fullname) &&
             isset($provisioninginfo->externalcourseid) && !empty($provisioninginfo->externalcourseid)) {
@@ -269,7 +266,7 @@ class panopto_data {
 
             if (isset($courseinfo) && isset($courseinfo->Id)) {
                 // Store the Panopto folder Id in the foldermap table so we know it exists.
-                panopto_data::set_course_foldermap(
+                self::set_course_foldermap(
                     $this->moodlecourseid,
                     $courseinfo->Id,
                     $this->servername,
@@ -278,7 +275,7 @@ class panopto_data {
                 );
 
                 // Sync access of the privisioning user so they don't need to relog to view the folder.
-                \panopto_data::sync_external_user($USER->id);
+                self::sync_external_user($USER->id);
 
                 $this->ensure_auth_manager();
 
@@ -370,12 +367,13 @@ class panopto_data {
             $provisioninginfo->accesserror = true;
             return $provisioninginfo;
         } else {
-            if (!$foundmappedfolder) {
-                // If we had a sessiongroupid set from a previous folder, but that folder was not found on Panopto set the current sessiongroupid to null to allow for a fresh provisioning/folder.
+            if ($hasvalidpanoptoid && !$foundmappedfolder) {
+                // If we had a sessiongroupid set from a previous folder, but that folder was not found on Panopto.
+                // Set the current sessiongroupid to null to allow for a fresh provisioning/folder.
                 // Provisioning will fail if this is not done, the wrong API endpoint will be called.
                 error_log(get_string('folder_not_found_error', 'block_panopto'));
                 $this->sessiongroupid = null;
-               $provisioninginfo->couldnotfindmappedfolder = true;
+                $provisioninginfo->couldnotfindmappedfolder = true;
             }
 
             $provisioninginfo->shortname = $DB->get_field(
@@ -422,16 +420,15 @@ class panopto_data {
         );
 
         $this->ensure_session_manager();
+
         foreach ($possibleimportsources as $possiblenewimportsource) {
             $importinarray = in_array($possiblenewimportsource, $currentimportsources);
 
             if (!$importinarray) {
                 // If a course is already listed as an import we don't need to add it to the import array, but we can still resync the groups.
                 $currentimportsources[] = $possiblenewimportsource;
-                self::add_new_course_import($courseid, $possiblenewimportsource);
+                self::add_new_course_import($this->moodlecourseid, $possiblenewimportsource);
             }
-
-
 
             $importpanopto = new panopto_data($newimportid);
             $provisioninginfo = $this->get_provisioning_info();
@@ -443,7 +440,7 @@ class panopto_data {
                 $importresult = $this->sessionmanager->set_copied_external_course_access_for_roles(
                     $provisioninginfo->fullname,
                     $provisioninginfo->externalcourseid,
-                    $this->sessiongroupid
+                    $importpanopto->sessiongroupid
                 );
                 if (isset($importresult)) {
                     $importinfo[] = $importresult;
@@ -479,7 +476,8 @@ class panopto_data {
             $ret = $this->sessionmanager->get_folders_by_id($this->sessiongroupid);
 
         } else {
-            // In this case the course is not mapped and the folder does not exist, I think -1 is fitting here. This case is handled differenty than false in our upgrade script.
+            // In this case the course is not mapped and the folder does not exist.
+            // I think -1 is fitting here. This case is handled differenty than false in our upgrade script.
             $ret = null;
         }
 
@@ -521,7 +519,7 @@ class panopto_data {
         $numservers = get_config('block_panopto', 'server_number');
         $numservers = isset($numservers) ? $numservers : 0;
 
-        // Increment numservers by 1 to take into account starting at 0;
+        // Increment numservers by 1 to take into account starting at 0.
         ++$numservers;
 
         for ($serverwalker = 1; $serverwalker <= $numservers; ++$serverwalker) {
@@ -552,8 +550,8 @@ class panopto_data {
             $sql = "SELECT id " .
                 "FROM {user} " .
                 "WHERE";
-            $siteAdmins =  explode(",",$CFG->siteadmins);
-            list($usql, $params) = $DB->get_in_or_equal($siteAdmins);
+            $siteadmins = explode(",", $CFG->siteadmins);
+            list($usql, $params) = $DB->get_in_or_equal($siteadmins);
             $sql .= " id $usql ";
             $superadmins = $DB->get_records_sql($sql, $params);
             foreach ($superadmins as $possibleuser) {
@@ -572,7 +570,7 @@ class panopto_data {
             );
 
             $currentcourses = array();
-            foreach($coursestosync as $course) {
+            foreach ($coursestosync as $course) {
                 $moodlecourse = $DB->get_record('course', array('id' => $course->moodleid));
 
                 if (isset($moodlecourse) && !empty($moodlecourse) && $moodlecourse !== false) {
@@ -582,14 +580,14 @@ class panopto_data {
                 } else {
                     // The course does not exist in Moodle, move it to the old table for cleanup.
                     error_log(get_string('moodle_course_not_exist', 'block_panopto'));
-                    panopto_data::delete_panopto_relation($course->moodleid, true);
+                    self::delete_panopto_relation($course->moodleid, true);
                 }
             }
         } else {
             $currentcourses = enrol_get_users_courses($userid, true);
         }
 
-        // Go through each course
+        // Go through each course.
         foreach ($currentcourses as $course) {
             $coursecontext = context_course::instance($course->id);
             $coursegroups = array();
@@ -602,7 +600,6 @@ class panopto_data {
                 isset($coursepanopto->applicationkey) && !empty($coursepanopto->applicationkey) &&
                 isset($coursepanopto->sessiongroupid) && !empty($coursepanopto->sessiongroupid)) {
 
-
                 $role = self::get_role_from_context($coursecontext, $userid);
 
                 // If the admin is already a creator or publisher do nothing.
@@ -610,7 +607,8 @@ class panopto_data {
                     $role = 'Creator';
                 }
 
-                // Build a list of ExternalGroupIds using a specific format, e.g. moodle31:courseId_viewers/moodle31:courseId_creators
+                // Build a list of ExternalGroupIds using a specific format.
+                // E.g. moodle31:courseId_viewers/moodle31:courseId_creators.
                 $groupname = $coursepanopto->instancename . ':' . $course->id;
                 if (strpos($role, 'Viewer') !== false) {
                     $coursegroups[] = $groupname . "_viewers";
@@ -624,7 +622,7 @@ class panopto_data {
                     $coursegroups[] = $groupname . "_publishers";
                 }
 
-                if(!array_key_exists($coursepanopto->servername, $servergroupidlist)) {
+                if (!array_key_exists($coursepanopto->servername, $servergroupidlist)) {
                     $servergroupidlist[$coursepanopto->servername] = array(
                         'panopto' => $coursepanopto,
                         'externalgroupids' => array_merge(array(), $coursegroups)
@@ -639,7 +637,7 @@ class panopto_data {
         }
 
         $userinfo = $DB->get_record('user', array('id' => $userid));
-        // For each Panopto server that has groups we need to provision
+        // For each Panopto server that has groups we need to provision.
         foreach ($servergroupidlist as $servername => $servergroup) {
 
             // Only try to sync the users if he Panopto server is up.
@@ -654,7 +652,7 @@ class panopto_data {
                     $servergroup['externalgroupids']
                 );
             } else {
-                error_log(get_string('panopto_server_error', 'block_panopto'));
+                error_log(get_string('panopto_server_error', 'block_panopto', $servername));
             }
         }
 
@@ -762,7 +760,7 @@ class panopto_data {
         $numservers = get_config('block_panopto', 'server_number');
         $numservers = isset($numservers) ? $numservers : 0;
 
-        // Increment numservers by 1 to take into account starting at 0;
+        // Increment numservers by 1 to take into account starting at 0.
         ++$numservers;
 
         $isconfigured = false;
@@ -866,7 +864,7 @@ class panopto_data {
         );
 
         if (isset($creatorrolesraw) && !empty($creatorrolesraw)) {
-            foreach($creatorrolesraw as $creatorrole) {
+            foreach ($creatorrolesraw as $creatorrole) {
                 $creatorroles[] = $creatorrole->role_id;
             }
         }
@@ -879,7 +877,7 @@ class panopto_data {
         );
 
         if (isset($pubrolesraw) && !empty($pubrolesraw)) {
-            foreach($pubrolesraw as $pubrole) {
+            foreach ($pubrolesraw as $pubrole) {
                 $pubroles[] = $pubrole->role_id;
             }
         }
@@ -1161,7 +1159,6 @@ class panopto_data {
 
         $publishersystemroles = explode(',', get_config('block_panopto', 'publisher_system_role_mapping'));
 
-
         // Remove all system level publisher roles and re-add them below to roles that still need them.
         $systemcontext = context_system::instance();
         $systemrolearray = get_all_roles($systemcontext);
@@ -1202,14 +1199,14 @@ class panopto_data {
     }
 }
 
-function is_server_alive($url = NULL) {
-    if($url == NULL) {
+function is_server_alive($url = null) {
+    if ($url == null) {
         return false;
     }
     $ch = curl_init($url);
 
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
     $data = curl_exec($ch);
@@ -1217,7 +1214,7 @@ function is_server_alive($url = NULL) {
 
     curl_close($ch);
 
-    if(($httpcode >= 200 && $httpcode < 300) || $httpcode == 302){
+    if (($httpcode >= 200 && $httpcode < 300) || $httpcode == 302) {
         return true;
     } else {
         return false;
