@@ -311,13 +311,7 @@ class panopto_data {
         return $courseinfo;
     }
 
-    /**
-     *  Fetch course name and membership info from DB in preparation for provisioning operation.
-     *
-     */
-    public function get_provisioning_info() {
-        global $DB;
-
+    public function check_course_role_mappings() {
         // If old role mappings exists, do not remap. Otherwise, set role mappings to defaults.
         $mappings = self::get_course_role_mappings($this->moodlecourseid);
         if (empty($mappings['creator'][0]) && empty($mappings['publisher'][0])) {
@@ -341,6 +335,16 @@ class panopto_data {
                 $defaultcreatormapping
             );
         }
+    }
+
+    /**
+     *  Fetch course name and membership info from DB in preparation for provisioning operation.
+     *
+     */
+    public function get_provisioning_info() {
+        global $DB;
+
+        $this->check_course_role_mappings();
 
         $provisioninginfo = new stdClass;
 

@@ -345,6 +345,10 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
                     // Course was mapped to a folder but that folder was not found, most likely folder was deleted on Panopto side.
                     // The true parameter moves the row to the old_foldermap instead of deleting it.
                     panopto_data::delete_panopto_relation($oldcourse->moodleid, true);
+
+                    //Recreate the default role mappings that were deleted by the above line.
+                    $oldpanoptocourse->panopto->check_course_role_mappings();
+
                     // Imports SHOULD still work for this case, so continue to below code.
                 }
                 $oldpanoptocourse->courseimports = panopto_data::get_import_list($oldpanoptocourse->panopto->moodlecourseid);
