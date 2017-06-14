@@ -256,6 +256,7 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
         $oldpanoptocourses = $DB->get_records(
             'block_panopto_foldermap',
             null,
+            null,
             'moodleid'
         );
 
@@ -289,6 +290,9 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
         $usercanupgrade = true;
 
         foreach ($oldpanoptocourses as $oldcourse) {
+            ++$currindex;
+            update_upgrade_progress($currindex, $totalupgradesteps);
+
             $oldpanoptocourse = new stdClass;
             $oldpanoptocourse->panopto = new panopto_data($oldcourse->moodleid);
 
@@ -324,6 +328,7 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
                 }
             } else {
                 // Shouldn't hit this case, but in the case a row in the DB has invalid data move it to the old_foldermap.
+                error_log(get_string('removing_invalid_folder_row', 'block_panopto'));
                 panopto_data::delete_panopto_relation($oldcourse->moodleid, true);
                 // Continue to the next entry assuming this one was cleanup.
                 continue;
@@ -360,9 +365,6 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
                 }
             }
             $panoptocourseobjects[] = $oldpanoptocourse;
-
-            ++$currindex;
-            update_upgrade_progress($currindex, $totalupgradesteps);
         }
 
         if (!$usercanupgrade) {

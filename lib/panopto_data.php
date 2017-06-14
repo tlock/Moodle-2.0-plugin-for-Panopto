@@ -1025,6 +1025,22 @@ class panopto_data {
             );
         }
 
+        // Clean up any creator role mappings.
+        if ($DB->get_records('block_panopto_creatormap', array('moodle_id' => $moodlecourseid))) {
+            $DB->delete_records(
+                'block_panopto_creatormap',
+                array('moodle_id' => $moodlecourseid)
+            );
+        }
+
+        // Clean up any publisher role mappings.
+        if ($DB->get_records('block_panopto_publishermap', array('moodle_id' => $moodlecourseid))) {
+            $DB->delete_records(
+                'block_panopto_publishermap',
+                array('moodle_id' => $moodlecourseid)
+            );
+        }
+
         if ($DB->get_records('block_panopto_importmap', array('target_moodle_id' => $moodlecourseid))) {
             $deletedrecords['imports'] = $DB->delete_records(
                 'block_panopto_importmap',
