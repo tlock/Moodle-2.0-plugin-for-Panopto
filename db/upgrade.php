@@ -291,8 +291,14 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
         foreach ($oldpanoptocourses as $oldcourse) {
             $oldpanoptocourse = new stdClass;
             $oldpanoptocourse->panopto = new panopto_data($oldcourse->moodleid);
-            if (isset($oldpanoptocourse->panopto->servername) && !empty($oldpanoptocourse->panopto->servername) &&
-                isset($oldpanoptocourse->panopto->applicationkey) && !empty($oldpanoptocourse->panopto->applicationkey)) {
+
+            $existingmoodlecourse = $DB->get_record('course', array('id' => $oldcourse->moodleid));
+
+            $moodlecourseexists = isset($existingmoodlecourse) && $existingmoodlecourse !== false;
+            $hasvalidpanoptodata = isset($oldpanoptocourse->panopto->servername) && !empty($oldpanoptocourse->panopto->servername) &&
+                                   isset($oldpanoptocourse->panopto->applicationkey) && !empty($oldpanoptocourse->panopto->applicationkey);
+
+            if ($moodlecourseexists && $hasvalidpanoptodata) {
                 if (isset($oldpanoptocourse->panopto->uname) && !empty($oldpanoptocourse->panopto->uname) &&
                    $oldpanoptocourse->panopto->uname !== 'guest') {
                     $oldpanoptocourse->panopto->ensure_auth_manager();
