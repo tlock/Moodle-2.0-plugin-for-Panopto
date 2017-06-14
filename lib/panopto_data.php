@@ -311,32 +311,6 @@ class panopto_data {
         return $courseinfo;
     }
 
-    public function check_course_role_mappings() {
-        // If old role mappings exists, do not remap. Otherwise, set role mappings to defaults.
-        $mappings = self::get_course_role_mappings($this->moodlecourseid);
-        if (empty($mappings['creator'][0]) && empty($mappings['publisher'][0])) {
-
-            // These settings are returned as a comma seperated string of role Id's.
-            $defaultpublishermapping = explode("," , get_config('block_panopto', 'publisher_role_mapping'));
-            $defaultcreatormapping = explode("," , get_config('block_panopto', 'creator_role_mapping'));
-
-            // Set the role mappings for the course to the defaults.
-            self::set_course_role_mappings(
-                $this->moodlecourseid,
-                $defaultpublishermapping,
-                $defaultcreatormapping
-            );
-
-            // Grant course users the proper Panopto permissions based on the default role mappings.
-            // This will make the role mappings be recognized when provisioning.
-            self::set_course_role_permissions(
-                $this->moodlecourseid,
-                $defaultpublishermapping,
-                $defaultcreatormapping
-            );
-        }
-    }
-
     /**
      *  Fetch course name and membership info from DB in preparation for provisioning operation.
      *
@@ -847,6 +821,36 @@ class panopto_data {
     public static function get_panopto_app_key($moodlecourseid) {
         global $DB;
         return $DB->get_field('block_panopto_foldermap', 'panopto_app_key', array('moodleid' => $moodlecourseid));
+    }
+
+    /**
+     *  Checks for course role mappings with Panopto. If none exist then set to the defaults.
+     *
+     */
+    public function check_course_role_mappings() {
+        // If old role mappings exists, do not remap. Otherwise, set role mappings to defaults.
+        $mappings = self::get_course_role_mappings($this->moodlecourseid);
+        if (empty($mappings['creator'][0]) && empty($mappings['publisher'][0])) {
+
+            // These settings are returned as a comma seperated string of role Id's.
+            $defaultpublishermapping = explode("," , get_config('block_panopto', 'publisher_role_mapping'));
+            $defaultcreatormapping = explode("," , get_config('block_panopto', 'creator_role_mapping'));
+
+            // Set the role mappings for the course to the defaults.
+            self::set_course_role_mappings(
+                $this->moodlecourseid,
+                $defaultpublishermapping,
+                $defaultcreatormapping
+            );
+
+            // Grant course users the proper Panopto permissions based on the default role mappings.
+            // This will make the role mappings be recognized when provisioning.
+            self::set_course_role_permissions(
+                $this->moodlecourseid,
+                $defaultpublishermapping,
+                $defaultcreatormapping
+            );
+        }
     }
 
     /**
