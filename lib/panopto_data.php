@@ -341,7 +341,7 @@ class panopto_data {
             $provisioninginfo->fullname = $mappedpanoptocourse->Name;
         } else if ($foundmappedfolder && !$userhasaccesstofolder) {
             // API call returned false, course exists but the user does not have access to the folder.
-            error_log(get_string('provisioning_access_error', 'block_panopto'));
+            error_log(get_string('provision_access_error', 'block_panopto'));
             $provisioninginfo->accesserror = true;
             return $provisioninginfo;
         } else {
