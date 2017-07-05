@@ -252,6 +252,9 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
     }
 
     if ($oldversion < 2017061000) {
+        // 7200 seconds is 2 hours, this is for larger Moodle instances with a lot of Panopto folders mapped to it.
+        upgrade_set_timeout(7200);
+
         // Get all active courses mapped to Panopto.
         $oldpanoptocourses = $DB->get_records(
             'block_panopto_foldermap',
