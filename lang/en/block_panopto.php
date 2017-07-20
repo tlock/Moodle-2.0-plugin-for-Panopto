@@ -129,7 +129,7 @@ $string['take_notes'] = 'Take Notes';
 $string['unconfigured'] = 'Global configuration incomplete. Please contact your system administrator.';
 $string['unknown_provisioning_error'] = "An unknown error has occurred.";
 $string['unprovisioned'] = 'This course has not yet been provisioned.';
-$string['upgrade_provision_access_error'] = 'UPGRADE BLOCKED: The user does not have access to a provisioned Panopto course folder. Upgrading user must have at least viewer access to all Panopto course folders. It is highly reccommended that the upgrading user is an Administrator on Panopto.';
+$string['upgrade_provision_access_error'] = 'UPGRADE BLOCKED: The user {$a} does not have access to a provisioned Panopto course folder. Upgrading user must have at least viewer access to all Panopto course folders. It is highly reccommended that the upgrading user is an Administrator on Panopto.';
 $string['upgrade_panopto_required_version'] = 'A Panopto server you are using does not meet the minimum required version to support this version of the Moodle Panopto Block. The upgrade will be blocked from succeeding until all Panopto servers in use meet miniumum version requirements.';
 $string['watch_live'] = 'Watch Live';
 /* End of file block_panopto.php */
