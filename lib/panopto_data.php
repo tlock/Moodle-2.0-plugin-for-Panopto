@@ -492,10 +492,12 @@ class panopto_data {
      * @param int $userid the Moodle id of the user we are trying to sync.
      */
     public static function sync_external_user($userid) {
-        global $DB, $CFG, $USER;
+        global $DB, $CFG;
 
-        if (isset($USER->username)) {
-            $username = $USER->username;
+        $userinfo = $DB->get_record('user', array('id' => $userid));
+
+        if (($userinfo !== false) && isset($userinfo->username)) {
+            $username = $userinfo->username;
             $userisguest = false;
         } else {
             $userisguest = true;
@@ -626,7 +628,6 @@ class panopto_data {
             }
         }
 
-        $userinfo = $DB->get_record('user', array('id' => $userid));
         // For each Panopto server that has groups we need to provision.
         foreach ($servergroupidlist as $servername => $servergroup) {
 
