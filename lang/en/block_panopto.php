@@ -121,6 +121,7 @@ $string['role_map_header_help'] = "Choose how Moodle roles map to Panopto roles.
 $string['select_server'] = 'Select a Panopto server';
 $string['select_server_help'] = 'Choose the Panopto server where the course folders will be provisioned.';
 $string['server_name'] = 'Server name';
+$string['server_not_available'] = 'The Panopto server {$a} was not available. Server may be down';
 $string['server_info_not_valid'] = 'The server name or application key are not valid, below are attempted values.';
 $string['show_all'] = 'Show All';
 $string['show_less'] = 'Show Less';

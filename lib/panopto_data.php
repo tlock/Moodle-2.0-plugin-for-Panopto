@@ -632,7 +632,7 @@ class panopto_data {
         foreach ($servergroupidlist as $servername => $servergroup) {
 
             // Only try to sync the users if he Panopto server is up.
-            if (is_server_alive('https://' . $servername . '/Panopto') || is_server_alive('http://' . $servername . '/Panopto')) {
+            if (self::is_server_alive('https://' . $servername . '/Panopto')) {
 
                 $servergroup['panopto']->ensure_user_manager();
 
@@ -1234,27 +1234,27 @@ class panopto_data {
             $coursecontext->mark_dirty();
         }
     }
-}
 
-function is_server_alive($url = null) {
-    if ($url == null) {
-        return false;
-    }
-    $ch = curl_init($url);
+    public static function is_server_alive($url = null) {
+        if ($url == null) {
+            return false;
+        }
+        $ch = curl_init($url);
 
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-    $data = curl_exec($ch);
-    $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $data = curl_exec($ch);
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-    curl_close($ch);
+        curl_close($ch);
 
-    if (($httpcode >= 200 && $httpcode < 300) || $httpcode == 302) {
-        return true;
-    } else {
-        return false;
+        if (($httpcode >= 200 && $httpcode < 300) || $httpcode == 302) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 /* End of file panopto_data.php */
