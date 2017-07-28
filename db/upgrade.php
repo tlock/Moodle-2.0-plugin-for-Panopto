@@ -308,8 +308,7 @@ function xmldb_block_panopto_upgrade($oldversion = 0) {
                                    isset($oldpanoptocourse->panopto->applicationkey) && !empty($oldpanoptocourse->panopto->applicationkey);
 
             if ($moodlecourseexists && $hasvalidpanoptodata) {
-                if (isset($oldpanoptocourse->panopto->uname) && !empty($oldpanoptocourse->panopto->uname) &&
-                   $oldpanoptocourse->panopto->uname !== 'guest') {
+                if (isset($oldpanoptocourse->panopto->uname) && !empty($oldpanoptocourse->panopto->uname)) {
                     $oldpanoptocourse->panopto->ensure_auth_manager();
                     $activepanoptoserverversion = $oldpanoptocourse->panopto->authmanager->get_server_version();
                     if (!version_compare($activepanoptoserverversion, \panopto_data::$requiredpanoptoversion, '>=')) {

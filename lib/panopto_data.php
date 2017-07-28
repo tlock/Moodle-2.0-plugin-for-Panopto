@@ -632,7 +632,7 @@ class panopto_data {
         foreach ($servergroupidlist as $servername => $servergroup) {
 
             // Only try to sync the users if he Panopto server is up.
-            if (self::is_server_alive('https://' . $servername . '/Panopto')) {
+            if (isset($userinfo) && ($userinfo !== false) && self::is_server_alive('https://' . $servername . '/Panopto')) {
 
                 $servergroup['panopto']->ensure_user_manager();
 
@@ -642,7 +642,7 @@ class panopto_data {
                     $userinfo->email,
                     $servergroup['externalgroupids']
                 );
-            } else {
+            } else if (isset($userinfo) && ($userinfo !== false)) {
                 error_log(get_string('panopto_server_error', 'block_panopto', $servername));
             }
         }
