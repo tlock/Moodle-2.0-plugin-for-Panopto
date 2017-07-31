@@ -53,7 +53,7 @@ try {
         $content->text = get_string('unprovisioned', 'block_panopto');
 
         if ($panoptodata->can_user_provision($courseid)) {
-            $content->text .= '<br/><br/>' .
+            $content->text .= '<br/>' .
             "<a href='$CFG->wwwroot/blocks/panopto/provision_course_internal.php?id=$courseid'>" .
             get_string('provision_course_link_text', 'block_panopto') . '</a>';
         }
@@ -213,7 +213,7 @@ try {
                 }
             }
         } catch (Exception $e) {
-            $content->text .= "<br><br><span class='error'>" . get_string('error_retrieving', 'block_panopto') . '</span>';
+            $content->text .= "<br><span class='error'>" . get_string('error_retrieving', 'block_panopto') . '</span>';
         }
 
         $content->footer = '';
