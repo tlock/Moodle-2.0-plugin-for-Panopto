@@ -75,7 +75,7 @@ class panopto_provision_form extends moodleform {
      */
     public function definition() {
 
-        global $DB, $USER, $aserverarray;
+        global $DB, $aserverarray;
 
         $mform = & $this->_form;
 
