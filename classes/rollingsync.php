@@ -61,7 +61,7 @@ class block_panopto_rollingsync {
             $selectedserver = get_config('block_panopto', 'server_name1');
             $selectedkey = get_config('block_panopto', 'application_key1');
 
-        $task = new \block_panopto\task\provision_course();
+            $task = new \block_panopto\task\provision_course();
             $task->set_custom_data(array(
                 'courseid' => $event->courseid,
                 'relateduserid' => $event->relateduserid,
