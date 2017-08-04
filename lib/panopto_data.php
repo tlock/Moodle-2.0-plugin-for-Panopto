@@ -256,7 +256,7 @@ class panopto_data {
 
             $this->ensure_session_manager();
 
-            if (isset($this->sessiongroupid)) {
+            if (isset($this->sessiongroupid) && !empty($this->sessiongroupid) && ($this->sessiongroupid !== false)) {
                 $courseinfo = $this->sessionmanager->set_external_course_access_for_roles(
                     $provisioninginfo->fullname,
                     $provisioninginfo->externalcourseid,
