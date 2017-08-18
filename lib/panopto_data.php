@@ -226,13 +226,16 @@ class panopto_data {
 
     /**
      * Return the user manager, if it does not yet exist try to create it.
+     *
+     * @param $usertomanage since the User management works on the user passed in through the auth param we need to pass the uname for the user we are managing.
      */
-    public function ensure_user_manager() {
+    public function ensure_user_manager($usertomanage) {
         // If no session soap client exists instantiate one.
-        if (!isset($this->usermanager)) {
+        if (!isset($this->usermanager) || ($this->usermanager->authparam->UserKey !== $this->panopto_decorate_username($usertomanage))) {
+
             // If no auth soap client for this instance, instantiate one.
             $this->usermanager = self::instantiate_user_soap_client(
-                $this->uname,
+                $usertomanage,
                 $this->servername,
                 $this->applicationkey
             );
@@ -565,7 +568,8 @@ class panopto_data {
             // Only try to sync the users if he Panopto server is up.
             if (self::is_server_alive('https://' . $this->servername . '/Panopto')) {
 
-                $this->ensure_user_manager();
+                //
+                $this->ensure_user_manager($userinfo->username);
 
                 $this->usermanager->sync_external_user(
                     $userinfo->firstname,

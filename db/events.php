@@ -39,4 +39,9 @@ $observers = array(
         'eventname' => '\core\event\course_deleted',
         'callback' => 'block_panopto_rollingsync::coursedeleted',
     ),
+    // User unenrolled event.
+    array(
+        'eventname' => '\core\event\user_enrolment_deleted',
+        'callback' => 'block_panopto_rollingsync::userenrolmentdeleted',
+    )
 );

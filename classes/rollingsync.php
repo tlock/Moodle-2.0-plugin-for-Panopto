@@ -108,4 +108,28 @@ class block_panopto_rollingsync {
             $panoptodata->init_and_sync_import($originalcourseid);
         }
     }
+
+    /**
+     * Called when a user has been unenrolled.
+     *
+     * @param \core\event\user_loggedin $event
+     */
+    public static function userenrolmentdeleted(\core\event\user_enrolment_deleted $event) {
+        if (!\panopto_data::is_main_block_configured() ||
+            !\panopto_data::has_minimum_version()) {
+            return;
+        }
+
+        $task = new \block_panopto\task\sync_user();
+        $task->set_custom_data(array(
+            'courseid' => $event->courseid,
+            'userid' => $event->relateduserid
+        ));
+
+        if (get_config('block_panopto', 'async_tasks')) {
+            \core\task\manager::queue_adhoc_task($task);
+        } else {
+            $task->execute();
+        }
+    }
 }
