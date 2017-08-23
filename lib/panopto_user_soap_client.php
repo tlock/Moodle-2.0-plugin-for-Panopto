@@ -37,7 +37,7 @@ class panopto_user_soap_client extends SoapClient {
     /**
      * @var array $authparam
      */
-    private $authparam;
+    public $authparam;
 
     /**
      * @var array $apiurl
