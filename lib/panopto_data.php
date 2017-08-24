@@ -200,7 +200,7 @@ class panopto_data {
             );
 
             if (!isset($this->sessionmanager)) {
-                error_log(get_string('api_manager_unavailable', 'block_panopto', 'session'));
+                self::print_log(get_string('api_manager_unavailable', 'block_panopto', 'session'));
             }
         }
     }
@@ -219,7 +219,7 @@ class panopto_data {
             );
 
             if (!isset($this->authmanager)) {
-                error_log(get_string('api_manager_unavailable', 'block_panopto', 'auth'));
+                self::print_log(get_string('api_manager_unavailable', 'block_panopto', 'auth'));
             }
         }
     }
@@ -241,7 +241,7 @@ class panopto_data {
             );
 
             if (!isset($this->usermanager)) {
-                error_log(get_string('api_manager_unavailable', 'block_panopto', 'user'));
+                self::print_log(get_string('api_manager_unavailable', 'block_panopto', 'user'));
             }
         }
     }
@@ -320,7 +320,7 @@ class panopto_data {
             if (isset($provisioninginfo->accesserror) && $provisioninginfo->accesserror === true) {
                 $courseinfo->accesserror = true;
             } else {
-                error_log(get_string('unknown_provisioning_error', 'block_panopto'));
+                self::print_log(get_string('unknown_provisioning_error', 'block_panopto'));
                 $courseinfo->unknownerror = true;
             }
         }
@@ -358,7 +358,7 @@ class panopto_data {
             $provisioninginfo->fullname = $mappedpanoptocourse->Name;
         } else if ($foundmappedfolder && !$userhasaccesstofolder) {
             // API call returned false, course exists but the user does not have access to the folder.
-            error_log(get_string('provision_access_error', 'block_panopto'));
+            self::print_log(get_string('provision_access_error', 'block_panopto'));
             $provisioninginfo->accesserror = true;
             return $provisioninginfo;
         } else {
@@ -366,7 +366,7 @@ class panopto_data {
                 // If we had a sessiongroupid set from a previous folder, but that folder was not found on Panopto.
                 // Set the current sessiongroupid to null to allow for a fresh provisioning/folder.
                 // Provisioning will fail if this is not done, the wrong API endpoint will be called.
-                error_log(get_string('folder_not_found_error', 'block_panopto'));
+                self::print_log(get_string('folder_not_found_error', 'block_panopto'));
                 $this->sessiongroupid = null;
                 $provisioninginfo->couldnotfindmappedfolder = true;
             }
@@ -429,7 +429,7 @@ class panopto_data {
             $provisioninginfo = $this->get_provisioning_info();
 
             if (!isset($importpanopto->sessiongroupid)) {
-                error_log(get_string('import_not_mapped', 'block_panopto'));
+                self::print_log(get_string('import_not_mapped', 'block_panopto'));
             } else if (!isset($provisioninginfo->accesserror)) {
                 // Only do this code if we have proper access to the target Panopto course folder.
                 $importresult = $this->sessionmanager->set_copied_external_course_access_for_roles(
@@ -440,7 +440,7 @@ class panopto_data {
                 if (isset($importresult)) {
                     $importinfo[] = $importresult;
                 } else {
-                    error_log(get_string('missing_required_version', 'block_panopto'));
+                    self::print_log(get_string('missing_required_version', 'block_panopto'));
                     return false;
                 }
             }
@@ -578,7 +578,7 @@ class panopto_data {
                     $groupstosync
                 );
             } else {
-                error_log(get_string('panopto_server_error', 'block_panopto', $this->servername));
+                self::print_log(get_string('panopto_server_error', 'block_panopto', $this->servername));
             }
         }
 
@@ -720,7 +720,7 @@ class panopto_data {
 
         if ($CFG->version < self::$requiredversion) {
             $hasminversion = false;
-            error_log(get_string('missing_moodle_required_version', 'block_panopto', $versionobject));
+            self::print_log(get_string('missing_moodle_required_version', 'block_panopto', $versionobject));
         }
 
         return $hasminversion;
@@ -1194,6 +1194,16 @@ class panopto_data {
             return true;
         } else {
             return false;
+        }
+    }
+
+    public static function print_log($logmessage) {
+        global $CFG;
+
+        if (get_config('block_panopto', 'print_log_to_file')) {
+            file_put_contents($CFG->dirroot . '/PanoptoLogs.txt', $logmessage . "\n", FILE_APPEND);
+        } else {
+            error_log($logmessage);
         }
     }
 }

@@ -112,6 +112,14 @@ if ($ADMIN->fulltree) {
             0
         )
     );
+    $settings->add(
+        new admin_setting_configcheckbox(
+            'block_panopto/print_log_to_file',
+            get_string('block_panopto_print_log_to_file', 'block_panopto'),
+            get_string('block_panopto_print_log_to_file_desc', 'block_panopto'),
+            0
+        )
+    );
 
     $systemcontext = context_system::instance();
     $systemrolearray = get_assignable_roles($systemcontext, ROLENAME_BOTH);
