@@ -1172,6 +1172,10 @@ class panopto_data {
     }
 
     public static function is_server_alive($url = null) {
+        // Only proceed with the cURL check if this toggle is true. This code is dependent on platform/OS specific calls.
+        if (!get_config('block_panopto', 'check_server_status')) {
+            return true;
+        }
         if ($url == null) {
             return false;
         }
