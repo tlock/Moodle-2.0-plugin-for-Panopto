@@ -297,8 +297,19 @@ class panopto_data {
                     $CFG->version
                 );
 
-                // uname will be guest is provisioning/upgrading through cli, no need to sync this 'user'.
-                if ($this->uname !== 'guest') {
+                // syncs every user enrolled in the course, this is fairly expensive so it should be normally turned off.
+                if (get_config('block_panopto', 'block_panopto_sync_after_provisioning')) {
+                    $coursecontext = context_course::instance($this->moodlecourseid);
+                    $enrolledusers = get_enrolled_users($coursecontext);
+
+                    // sync every user enrolled in the course
+                    foreach ($enrolleduser as $enrolledusers) {
+                        $this->sync_external_user($enrolleduser->id);
+                    }
+                } else if ($this->uname !== 'guest') {
+                    // uname will be guest is provisioning/upgrading through cli, no need to sync this 'user'.
+                    // This is intended to make sure provisioning teachers get access without relogging, so we only need to perform this if we aren't syncing all enrolled users.
+
                     // Update permissions so user can see everything they should.
                     $this->sync_external_user($USER->id);
                 }
