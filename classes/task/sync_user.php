@@ -42,6 +42,10 @@ class sync_user extends \core\task\adhoc_task {
         global $DB;
         $eventdata = (array) $this->get_custom_data();
         $coursepanopto = new \panopto_data($eventdata['courseid']);
-        $coursepanopto->sync_external_user($eventdata['userid']);
+
+        if (isset($coursepanopto->servername) && !empty($coursepanopto->servername) &&
+            isset($coursepanopto->applicationkey) && !empty($coursepanopto->applicationkey)) {
+            $coursepanopto->sync_external_user($eventdata['userid']);
+        }
     }
 }
