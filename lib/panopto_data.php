@@ -298,12 +298,12 @@ class panopto_data {
                 );
 
                 // syncs every user enrolled in the course, this is fairly expensive so it should be normally turned off.
-                if (get_config('block_panopto', 'block_panopto_sync_after_provisioning')) {
+                if (get_config('block_panopto', 'sync_after_provisioning')) {
                     $coursecontext = context_course::instance($this->moodlecourseid);
                     $enrolledusers = get_enrolled_users($coursecontext);
 
                     // sync every user enrolled in the course
-                    foreach ($enrolleduser as $enrolledusers) {
+                    foreach ($enrolledusers as $enrolleduser) {
                         $this->sync_external_user($enrolleduser->id);
                     }
                 } else if ($this->uname !== 'guest') {
