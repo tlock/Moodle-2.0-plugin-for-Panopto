@@ -1141,17 +1141,16 @@ class panopto_data {
         self::add_context_capability_to_roles($coursecontext, $publisherroles, 'block/panopto:provision_aspublisher');
         self::add_context_capability_to_roles($coursecontext, $creatorroles, 'block/panopto:provision_asteacher');
 
-        $publishersystemroles = explode(',', get_config('block_panopto', 'publisher_system_role_mapping'));
-
         // Remove all system level publisher roles and re-add them below to roles that still need them.
         $systemcontext = context_system::instance();
         $systemrolearray = get_all_roles($systemcontext);
         self::remove_context_capability_from_roles($systemcontext, $systemrolearray, 'block/panopto:provision_aspublisher');
 
-        if (count($publishersystemroles)) {
+        $publisherrolesstring = trim(get_config('block_panopto', 'publisher_system_role_mapping'));
+        if (isset($publisherrolesstring) && !empty($publisherrolesstring)) {
+            $publishersystemroles = explode(',', $publisherrolesstring);
             self::add_context_capability_to_roles($systemcontext, $publishersystemroles, 'block/panopto:provision_aspublisher');
-
-            // Mark dirty (Moodle standard for capability changes at context level).
+            // Mark dirty (moodle standard for capability changes at context level).
             $systemcontext->mark_dirty();
         }
 
