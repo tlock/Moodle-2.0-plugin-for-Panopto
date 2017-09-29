@@ -418,42 +418,35 @@ class panopto_data {
      *
      */
     public function init_and_sync_import($newimportid) {
-        $importinfo = array();
+        $importinfo = null;
         $currentimportsources = self::get_import_list($this->moodlecourseid);
-        $possibleimportsources = array_merge(
-            array($newimportid),
-            self::get_import_list($newimportid)
-        );
 
         $this->ensure_session_manager();
+        $importinarray = in_array($newimportid, $currentimportsources);
 
-        foreach ($possibleimportsources as $possiblenewimportsource) {
-            $importinarray = in_array($possiblenewimportsource, $currentimportsources);
+        if (!$importinarray) {
+            // If a course is already listed as an import we don't need to add it to the import array, but we can still resync the groups.
+            self::add_new_course_import($this->moodlecourseid, $newimportid);
+        }
 
-            if (!$importinarray) {
-                // If a course is already listed as an import we don't need to add it to the import array, but we can still resync the groups.
-                $currentimportsources[] = $possiblenewimportsource;
-                self::add_new_course_import($this->moodlecourseid, $possiblenewimportsource);
-            }
+        $importpanopto = new panopto_data($newimportid);
+        $provisioninginfo = $this->get_provisioning_info();
 
-            $importpanopto = new panopto_data($newimportid);
-            $provisioninginfo = $this->get_provisioning_info();
+        if (!isset($importpanopto->sessiongroupid)) {
+            self::print_log(get_string('import_not_mapped', 'block_panopto'));
+        } else if (!isset($provisioninginfo->accesserror)) {
+            // Only do this code if we have proper access to the target Panopto course folder.
+            $importresult = $this->sessionmanager->set_copied_external_course_access_for_roles(
+                $provisioninginfo->fullname,
+                $provisioninginfo->externalcourseid,
+                $importpanopto->sessiongroupid
+            );
 
-            if (!isset($importpanopto->sessiongroupid)) {
-                self::print_log(get_string('import_not_mapped', 'block_panopto'));
-            } else if (!isset($provisioninginfo->accesserror)) {
-                // Only do this code if we have proper access to the target Panopto course folder.
-                $importresult = $this->sessionmanager->set_copied_external_course_access_for_roles(
-                    $provisioninginfo->fullname,
-                    $provisioninginfo->externalcourseid,
-                    $importpanopto->sessiongroupid
-                );
-                if (isset($importresult)) {
-                    $importinfo[] = $importresult;
-                } else {
-                    self::print_log(get_string('missing_required_version', 'block_panopto'));
-                    return false;
-                }
+            if (isset($importresult)) {
+                $importinfo = $importresult;
+            } else {
+                self::print_log(get_string('missing_required_version', 'block_panopto'));
+                return false;
             }
         }
 

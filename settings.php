@@ -185,5 +185,10 @@ if ($ADMIN->fulltree) {
         get_string('block_global_add_courses', 'block_panopto') . '</a>';
 
     $settings->add(new admin_setting_heading('block_panopto_add_courses', '', $link));
+
+    $importlink = '<a id="panopto_reinitialize_imports_btn" href="' . $CFG->wwwroot . '/blocks/panopto/reinitialize_imports.php">' .
+        get_string('block_global_reinitialize_all_imports', 'block_panopto') . '</a>';
+
+    $settings->add(new admin_setting_heading('block_panopto_reinitialize_all_imports', '', $importlink));
 }
 /* End of file settings.php */
