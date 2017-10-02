@@ -1207,6 +1207,10 @@ class panopto_data {
             file_put_contents($CFG->dirroot . '/PanoptoLogs.txt', $logmessage . "\n", FILE_APPEND);
         } else {
             error_log($logmessage);
+
+            // This is needed to longer processes like the Moodle upgrade process and import process.
+            ob_flush();
+            flush();
         }
     }
 }

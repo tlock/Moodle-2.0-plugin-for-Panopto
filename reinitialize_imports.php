@@ -74,8 +74,6 @@ function reinitialize_all_imports() {
     foreach ($courseimports as $courseimport) {
 
         panopto_data::print_log(get_string('reinitialize_import_started', 'block_panopto', $courseimport->target_moodle_id));
-        ob_flush();
-        flush();
 
         if (!isset($coursepanoptoarray[$courseimport->target_moodle_id])) {
             $targetpanopto = new panopto_data($courseimport->target_moodle_id);
@@ -109,8 +107,6 @@ function reinitialize_all_imports() {
         include('views/imported_course.html.php');
 
         panopto_data::print_log(get_string('reinitialize_import_finished', 'block_panopto', $courseimport->target_moodle_id));
-        ob_flush();
-        flush();
     }
 }
 
