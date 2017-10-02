@@ -150,7 +150,7 @@ function upgrade_all_panopto_folders() {
         $oldpanoptocourse->provisioninginfo = $oldpanoptocourse->panopto->get_provisioning_info();
         if (isset($oldpanoptocourse->provisioninginfo->accesserror) &&
            $oldpanoptocourse->provisioninginfo->accesserror === true) {
-            break;
+            continue;
         } else {
             if (isset($oldpanoptocourse->provisioninginfo->couldnotfindmappedfolder) &&
                $oldpanoptocourse->provisioninginfo->couldnotfindmappedfolder === true) {
