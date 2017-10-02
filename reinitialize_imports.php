@@ -130,10 +130,10 @@ $mform = new panopto_reinitialize_imports_form($PAGE->url);
 if ($mform->is_cancelled()) {
     redirect(new moodle_url($returnurl));
 } else if ($mform->get_data()) {
-    $importitle = get_string('block_global_reinitialize_all_imports', 'block_panopto');
+    $importtitle = get_string('block_global_reinitialize_all_imports', 'block_panopto');
     $PAGE->set_pagelayout('base');
-    $PAGE->set_title($importitle);
-    $PAGE->set_heading($importitle);
+    $PAGE->set_title($importtitle);
+    $PAGE->set_heading($importtitle);
 
     // System context.
     require_capability('block/panopto:provision_multiple', $context);
@@ -143,7 +143,7 @@ if ($mform->is_cancelled()) {
     $PAGE->navbar->add(get_string('blocks'), $manageblocks);
     $PAGE->navbar->add(get_string('pluginname', 'block_panopto'), $panoptosettings);
 
-    $PAGE->navbar->add($importitle, new moodle_url($PAGE->url));
+    $PAGE->navbar->add($importtitle, new moodle_url($PAGE->url));
 
     echo $OUTPUT->header();
 
