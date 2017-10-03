@@ -18,7 +18,7 @@
  * the reinitialize imports logic for Panopto
  *
  * @package block_panopto
- * @copyright  Panopto 2009 - 2016 /With contributions from Spenser Jones (sjones@ambrose.edu)
+ * @copyright  Panopto 2009 - 2017
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -56,7 +56,6 @@ require_login();
 function reinitialize_all_imports() {
     global $DB;
 
-    // TODO: Check moodle standards on constanst strings.
     $NO_COURSE_EXISTS = "NO_COURSE_EXISTS";
     $INVALID_PANOPTO_DATA = "INVALID_PANOPTO_DATA";
 
@@ -144,6 +143,8 @@ if ($mform->is_cancelled()) {
     echo $OUTPUT->header();
 
     reinitialize_all_imports();
+
+    echo "<a href='$returnurl'>" . get_string('back_to_config', 'block_panopto') . '</a>';
 
     echo $OUTPUT->footer();
 } else {
