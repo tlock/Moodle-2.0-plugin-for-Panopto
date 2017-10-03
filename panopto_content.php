@@ -197,7 +197,7 @@ try {
 
                     // A the users who can provision are the Moodle admin, and enrolled users given a publisher or creator role.
                     // This makes it so can_user_provision will allow only creators/publishers/admins to see these links.
-                    if ($panoptodata->can_user_provision($courseid)) {
+                    if (get_config('block_panopto', 'anyone_view_recorder_links') || $panoptodata->can_user_provision($courseid)) {
                         $systeminfo = $panoptodata->get_recorder_download_urls();
                         $content->text .= "<div class='listItem'>" .
                             get_string('download_recorder', 'block_panopto') .

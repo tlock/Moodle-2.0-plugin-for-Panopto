@@ -136,6 +136,14 @@ if ($ADMIN->fulltree) {
             0
         )
     );
+    $settings->add(
+        new admin_setting_configcheckbox(
+            'block_panopto/anyone_view_recorder_links',
+            get_string('block_panopto_anyone_view_recorder_links', 'block_panopto'),
+            get_string('block_panopto_anyone_view_recorder_links_desc', 'block_panopto'),
+            0
+        )
+    );
 
     $systemcontext = context_system::instance();
     $systemrolearray = get_assignable_roles($systemcontext, ROLENAME_BOTH);
