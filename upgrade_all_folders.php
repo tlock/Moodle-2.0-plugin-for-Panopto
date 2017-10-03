@@ -18,7 +18,7 @@
  * the ClientData to PublicAPI logic for Panopto
  *
  * @package block_panopto
- * @copyright  Panopto 2009 - 2016 /With contributions from Spenser Jones (sjones@ambrose.edu)
+ * @copyright  Panopto 2009 - 2017
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -253,6 +253,8 @@ if ($mform->is_cancelled()) {
     echo $OUTPUT->header();
 
     upgrade_all_panopto_folders();
+
+    echo "<a href='$returnurl'>" . get_string('back_to_config', 'block_panopto') . '</a>';
 
     echo $OUTPUT->footer();
 } else {
