@@ -118,7 +118,6 @@ $string['publisher'] = 'Publisher';
 $string['publisher_help'] = 'A Publisher can approve content submitted by Creators';
 $string['publishers'] = 'Publishers';
 $string['removing_corrupt_folder_row'] = "Foldermap entry appears corrupted, moving entry to old_foldermap for user reference. Corrupted row used for course with Moodle Id: ";
-$string['reprovision_course_link_text'] = 'Reprovision Course';
 $string['result'] = 'Result';
 $string['require_panopto_version_title'] = 'Minimum Panopto version required for this version of the Moodle Panopto block';
 $string['missing_moodle_required_version'] = 'Panopto block requires a Moodle version newer than {$a->requiredversion}, your current Moodle version is: {$a->currentversion}';
