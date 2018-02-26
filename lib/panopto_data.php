@@ -1167,7 +1167,7 @@ class panopto_data {
 
         // Extract the existing capabilities that have been assigned for context, role and capability.
         foreach ($roles as $key => $roleid) {
-            if ($DB->record_exists('role_capabilities', array('contextid'=>$context->id, 'roleid'=>$roleid, 'capability'=>$capability))) {
+            if ($roleid & $DB->record_exists('role_capabilities', array('contextid'=>$context->id, 'roleid'=>$roleid, 'capability'=>$capability))) {
                 $existing[$roleid] = $capability;
             }
         }
